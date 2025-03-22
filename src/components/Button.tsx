@@ -16,14 +16,14 @@ const sizeClasses = {
 
 const variantColorClasses = {
   primary: {
-    primary: "bg-primary-500 text-white",
-    error: "bg-error-500 text-white",
-    warning: "bg-warning-500 text-white",
-    success: "bg-success-500 text-white",
+    primary: "bg-primary-500 text-white hover:bg-primary-600",
+    error: "bg-error-500 text-white hover:bg-error-600",
+    warning: "bg-warning-500 text-white houver:bg-warning-600",
+    success: "bg-success-500 text-white hover:bg-success-600",
   },
   outline: {
-    primary: "border border-primary-500 text-primary-500",
-    error: "border border-error-500 text-error-500",
+    primary: "border border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white",
+    error: "border border-error-500 text-error-500 hover:bg-error-500 hover:text-white",
     warning: "border border-warning-500 text-warning-500",
     success: "border border-success-500 text-success-500",
   },
@@ -52,7 +52,8 @@ export function Button({
       className={`${sizeClasses[size!]}
         ${variantColorClasses[variant!][color!]}
         ${rounded ? roundedClasses["true"] : ""}
-        `}
+        ${props.className}
+        hover:cursor-pointer`}
     >
       {name}
     </button>
