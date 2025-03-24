@@ -4,7 +4,7 @@ interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Navbar({ children, ...props }: NavbarProps) {
     return (
-        <div className={`flex flex-row justify-between items-center p-4 fixed top-0 left-0 right-0 w-full ${props.className}`}>
+        <div className={`flex flex-row bg-dark-800 w-99/100 self-center justify-between items-center py-4 px-8 fixed top-2 rounded-lg ${props.className}`}>
             {children}
         </div>
     );
