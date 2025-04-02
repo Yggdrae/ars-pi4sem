@@ -2,7 +2,7 @@ import { IconName } from "@/interfaces/IIcons";
 import { JSX } from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   name?: string;
   variant?: "primary" | "outline" | "ghost";
   color?: "primary" | "error" | "warning" | "success" | "info";
@@ -15,6 +15,7 @@ const sizeClasses = {
   sm: "px-2 py-1 text-sm",
   md: "px-4 py-2 text-md",
   lg: "px-6 py-3 text-lg",
+  xl: "px-8 py-4 text-xl",
 };
 
 const variantColorClasses = {
