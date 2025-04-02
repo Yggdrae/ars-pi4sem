@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "primeicons/primeicons.css";
 
 @theme {
   /* Placeholder Colors */
@@ -7,9 +6,9 @@
   --placeholder-dark: var(--placeholder-dark);
 
   /* Content Colors */
-  --color-content-primary: #7b7b7b;
-  --color-content-secondary: #9c9c9c;
-  --color-content-ternary: #c8c8c8;
+  --color-content-primary: #E5D3B3;
+  --color-content-secondary: #1E1E1E;
+  --color-content-ternary: #D1D5DC;
 
   /* Default Palette */
   --color-default-content: #363636;
