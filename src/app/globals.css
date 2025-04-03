@@ -131,7 +131,7 @@
   --font-size-2xs: 0.625rem;
 
   /* Font Families */
-  --font-family-heading: "Montserrat Flex", "Roboto", sans-serif;
+  --font-family-heading: "Arial", sans-serif;
   --font-family-text: "Roboto Flex", sans-serif;
   --font-family-mono: "Fira Code", monospace;
 
