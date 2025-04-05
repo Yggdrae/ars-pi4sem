@@ -22,7 +22,7 @@ const Button = ({
   const variantStyles = {
     primary: 'bg-[#E5D3B3] hover:bg-[#d8c6a6] text-[#1E1E1E]',
     secondary: 'bg-[#1E1E1E] hover:bg-[#2a2a2a] text-[#FFFFFF]',
-    tertiary: 'bg-[#D1D5DC] hover:bg-[#c4c8cf] text-[#1E1E1E]',
+    tertiary: 'bg-transparent text-content-primary w-full rounded-none',
     outline: 'bg-transparent border-2 border-[#E5D3B3] text-[#E5D3B3] hover:bg-[#1E1E1E]'
   };
   
