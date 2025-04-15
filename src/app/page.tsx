@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <Layout>
       <Hero
-        className="mt-8 mb-16 rounded-2xl items-start"
+        className="mb-16 rounded-2xl items-start"
         height="384px"
         backgroundImage={require("@/assets/conference-room.png")}
         backgroundAlt="Imagem de sala de reunião"
@@ -50,7 +50,7 @@ export default function Home() {
         </Text>
       </HStack>
 
-      <HStack className="w-full justify-center flex-wrap gap-8 mb-24">
+      <HStack className="w-full justify-center flex-wrap gap-8">
         <DestaqueCard
           backgroundImage={require("@/assets/destaque1.png")}
           backgroundAlt="Sala Prime"
