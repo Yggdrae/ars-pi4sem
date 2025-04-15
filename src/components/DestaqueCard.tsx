@@ -24,15 +24,15 @@ export const DestaqueCard = ({
   imagePosition = "center",
   objectFit = "cover",
   children,
-  className,
+  className = "",
   buttonText = "Reservar",
 }: DestaqueCardProps) => {
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-2xl w-full max-w-md bg-[#2A2A2A] text-[#FFFFFF] border border-content-primary/20 ${className}`}
+      className={`flex flex-col overflow-hidden rounded-2xl bg-[#2A2A2A] text-[#FFFFFF] border border-content-primary/20 ${className}`}
     >
-      {/* Container da imagem */}
-      <div className="relative w-full h-64">
+      {/* Imagem de fundo */}
+      <div className="relative w-full h-56 sm:h-64">
         <Image
           src={backgroundImage}
           alt={backgroundAlt}
@@ -42,22 +42,18 @@ export const DestaqueCard = ({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           placeholder="blur"
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P/LfwAJNAO5XLPYgwAAAABJRU5ErkJggg=="
-          style={{
-            objectFit,
-            objectPosition: imagePosition,
-          }}
+          style={{ objectFit, objectPosition: imagePosition }}
         />
       </div>
 
-      {/* Conteúdo do card */}
-      <div className="flex flex-col flex-grow p-6 gap-4">
-        {/* Título */}
-        <h2 className="text-2xl font-semibold">{title}</h2>
+      {/* Conteúdo */}
+      <div className="flex flex-col flex-grow p-5 gap-4">
+        <h2 className="text-xl sm:text-2xl font-semibold leading-snug">{title}</h2>
 
-        {/* Descrição */}
-        <p className="text-base text-gray-200">{description}</p>
+        <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
+          {description}
+        </p>
 
-        {/* Badges */}
         <div className="flex flex-wrap gap-2 mt-2">
           {badges.map((badge, index) => (
             <span
@@ -69,18 +65,15 @@ export const DestaqueCard = ({
           ))}
         </div>
 
-        {/* Componentes filhos adicionais se houver */}
-        {children}
+        {children && <div className="mt-2">{children}</div>}
 
-        {/* Espaçador que empurra o botão para baixo */}
-        <div className="flex-grow"></div>
-
-        {/* Botão */}
-        <Button
-          title={buttonText}
-          className="mt-4 text-[16px] w-full bg-content-primary text-black hover:bg-beige-200"
-          size="lg"
-        />
+        <div className="mt-auto">
+          <Button
+            title={buttonText}
+            className="mt-4 w-full bg-content-primary text-black"
+            size="lg"
+          />
+        </div>
       </div>
     </div>
   );
