@@ -1,5 +1,5 @@
-import { HStack } from "./HStack";
-import { VStack } from "./VStack";
+import { HStack } from "../HStack";
+import { VStack } from "../VStack";
 
 interface FooterProps extends React.HTMLAttributes<HTMLDivElement> {
     children?: React.ReactNode
