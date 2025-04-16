@@ -20,7 +20,7 @@ export const InputText = ({
   const isPassword = type === "password";
 
   return (
-    <div className={`flex flex-col gap-1 w-full ${className}`}>
+    <div className={`flex flex-col gap-1 ${className}`}>
       <label htmlFor={id} className="text-sm text-content-primary">
         {label}
       </label>
