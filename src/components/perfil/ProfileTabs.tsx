@@ -3,6 +3,7 @@ import { HStack } from "../HStack";
 import { VStack } from "../VStack";
 import { DadosTab } from "./tabs/DadosTab";
 import { PagamentoTab } from "./tabs/PagamentoTab";
+import { NotificacoesTab } from "./tabs/NotificacoesTab";
 
 interface ProfileTabsProps {
     selectedTab: string;
@@ -19,7 +20,7 @@ const tabs = [
 export const ProfileTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
     return (
         <VStack>
-            <HStack className="w-full mt-6 border-b border-[#333] overflow-x-auto gap-4 mb-4">
+            <div className="flex flex-wrap gap-4 mt-6 border-b border-[#333]">
                 {tabs.map(({ label, key }) => (
                     <button
                         key={key}
@@ -34,9 +35,11 @@ export const ProfileTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
                         <Text>{label}</Text>
                     </button>
                 ))}
-            </HStack>
+            </div>
             {selectedTab === "dados" && <DadosTab />}
             {selectedTab === "pagamento" && <PagamentoTab />}
+            {selectedTab === "notificacoes" && <NotificacoesTab />}
+            {selectedTab === "historico" && <NotificacoesTab />}
         </VStack>
     );
 };
