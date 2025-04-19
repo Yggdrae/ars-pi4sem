@@ -4,6 +4,7 @@ import { VStack } from "../VStack";
 import { DadosTab } from "./tabs/DadosTab";
 import { PagamentoTab } from "./tabs/PagamentoTab";
 import { NotificacoesTab } from "./tabs/NotificacoesTab";
+import { HistoricoTab } from "./tabs/HistoricoTab";
 
 interface ProfileTabsProps {
     selectedTab: string;
@@ -39,7 +40,7 @@ export const ProfileTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
             {selectedTab === "dados" && <DadosTab />}
             {selectedTab === "pagamento" && <PagamentoTab />}
             {selectedTab === "notificacoes" && <NotificacoesTab />}
-            {selectedTab === "historico" && <NotificacoesTab />}
+            {selectedTab === "historico" && <HistoricoTab />}
         </VStack>
     );
 };
