@@ -7,6 +7,7 @@ import { Text } from "@/components/Text";
 import Button from "@/components/Button";
 import { DestaqueCard } from "@/components/DestaqueCard";
 import { DiferenciaisSection } from "@/components/DiferenciaisSection";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -30,11 +31,13 @@ export default function Home() {
             Espaços elegantes e funcionais para suas reuniões corporativas mais importantes.
           </Text>
           <div className="mt-8 w-fit">
-            <Button
-              title="Reservar Agora"
-              className="text-[16px] sm:text-[18px]"
-              size="md"
-            />
+            <Link href="/salas">
+              <Button
+                title="Reservar Agora"
+                className="text-[16px] sm:text-[18px]"
+                size="md"
+              />
+            </Link>
           </div>
         </VStack>
       </Hero>
@@ -45,9 +48,11 @@ export default function Home() {
         <Text className="text-[24px] sm:text-[30px] text-content-primary font-family-heading font-bold">
           Salas em Destaque
         </Text>
-        <Text className="text-[14px] sm:text-[16px] text-content-primary font-family-heading cursor-pointer">
-          Ver todas
-        </Text>
+        <Link href="/salas">
+          <Text className="text-[14px] sm:text-[16px] text-content-primary font-family-heading cursor-pointer">
+            Ver todas
+          </Text>
+        </Link>
       </HStack>
 
       <HStack className="w-full justify-center flex-wrap gap-8">
