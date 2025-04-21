@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.variable} ${robotoMono.variable} antialiased h-screen w-screen bg-content-secondary`}
+        className={`${roboto.variable} ${robotoMono.variable} antialiased h-screen bg-content-secondary`}
       >
         {children}
       </body>

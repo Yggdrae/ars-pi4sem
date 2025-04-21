@@ -4,7 +4,7 @@ import { HStack } from "./HStack";
 import { Text } from "./Text";
 import { VStack } from "./VStack";
 
-export const FilterSection = () => {
+export const FilterSection: React.FC = () => {
     const capacidades = ["4", "6", "8", "10", "12+"];
     const andares = ["1º", "2º", "3º", "4º"];
     const recursos = [{
