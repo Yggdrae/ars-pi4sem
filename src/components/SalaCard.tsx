@@ -18,6 +18,7 @@ interface DestaqueCardProps {
   objectFit?: "cover" | "contain" | "fill" | "none";
   className?: string;
   buttonText?: string;
+  onClick?: () => void;
 }
 
 export const SalaCard = ({
@@ -32,12 +33,12 @@ export const SalaCard = ({
   objectFit = "cover",
   children,
   className = "",
+  onClick,
 }: DestaqueCardProps) => {
   return (
     <VStack
       className={`flex flex-col w-full sm:w-[48%] lg:w-[40%] xl:w-[32%] overflow-hidden rounded-2xl bg-[#2A2A2A] text-[#FFFFFF] border border-content-primary/20 ${className}`}
     >
-      {/* Imagem de fundo */}
       <div className="relative w-full h-56 sm:h-64">
         <Image
           src={backgroundImage}
@@ -50,37 +51,51 @@ export const SalaCard = ({
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P/LfwAJNAO5XLPYgwAAAABJRU5ErkJggg=="
           style={{ objectFit, objectPosition: imagePosition }}
         />
+
+        <div
+          className="
+            absolute top-2 right-2
+            bg-content-primary text-black
+            px-3 py-1 rounded-full
+            text-sm font-semibold
+            shadow-md
+          "
+        >
+          {`R$ ${hourValue}/h`}
+        </div>
       </div>
 
-      {/* Conteúdo */}
-      <VStack className="flex flex-col flex-grow p-5">
-        <h2 className="text-xl sm:text-2xl font-semibold leading-snug">{title}</h2>
+      <VStack className="flex flex-col flex-grow p-5 justify-between">
+        <VStack>
+          <h2 className="text-xl sm:text-2xl font-semibold leading-snug">{title}</h2>
 
-        <p className="text-[14px] lg:text-[12px] text-gray-300 leading-relaxed">
-          {`${floor}º andar - Capacidade para ${capacity} pessoas`}
-        </p>
+          <p className="text-[14px] lg:text-[12px] text-gray-300 leading-relaxed">
+            {`${floor}º andar - Capacidade para ${capacity} pessoas`}
+          </p>
 
-        <HStack className="flex flex-wrap gap-2 mt-2">
-          {resources.map((resource, index) => {
-            const Icon = resource.icon;
-            return (
-              <HStack
-                key={index}
-                className="px-3 py-1 bg-content-secondary text-sm rounded-lg items-center gap-1"
-              >
-                <Icon size={14} className="text-content-ternary" />
-                <Text>{resource.nome}</Text>
-              </HStack>
-            );
-          })}
-        </HStack>
+          <HStack className="flex flex-wrap gap-2 mt-2">
+            {resources.map((resource, index) => {
+              const Icon = resource.icon;
+              return (
+                <HStack
+                  key={index}
+                  className="px-3 py-1 bg-content-secondary text-sm rounded-lg items-center gap-1"
+                >
+                  <Icon size={14} className="text-content-ternary" />
+                  <Text>{resource.nome}</Text>
+                </HStack>
+              );
+            })}
+          </HStack>
 
-        {children && <div className="mt-2">{children}</div>}
+          {children && <div className="mt-2">{children}</div>}
+        </VStack>
 
         <Button
           title="Reservar"
-          className="mt-4 w-full bg-content-primary text-black"
+          className="mt-4 w-full bg-content-primary text-black place-self-end"
           size="lg"
+          onClick={onClick}
         />
       </VStack>
     </VStack>
