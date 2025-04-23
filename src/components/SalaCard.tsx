@@ -9,7 +9,7 @@ interface DestaqueCardProps {
   backgroundImage: string | StaticImageData;
   backgroundAlt: string;
   title: string;
-  floor: number;
+  floor: string;
   capacity: number;
   hourValue: number;
   resources?: { nome: string; icon: any }[];
@@ -70,7 +70,7 @@ export const SalaCard = ({
           <h2 className="text-xl sm:text-2xl font-semibold leading-snug">{title}</h2>
 
           <p className="text-[14px] lg:text-[12px] text-gray-300 leading-relaxed">
-            {`${floor}º andar - Capacidade para ${capacity} pessoas`}
+            {`${floor} andar - Capacidade para ${capacity} pessoas`}
           </p>
 
           <HStack className="flex flex-wrap gap-2 mt-2">

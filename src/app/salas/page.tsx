@@ -12,7 +12,7 @@ export default function Salas() {
         {
             id: 1,
             nome: "Sala Executiva Alpha",
-            andar: 1,
+            andar: "1º",
             capacidade: 8,
             valorHora: 120,
             recursos: [
@@ -24,7 +24,7 @@ export default function Salas() {
         {
             id: 2,
             nome: "Sala Executiva Beta",
-            andar: 2,
+            andar: "2º",
             capacidade: 16,
             valorHora: 220,
             recursos: [
@@ -36,7 +36,7 @@ export default function Salas() {
         {
             id: 3,
             nome: "Sala Executiva Gamma",
-            andar: 3,
+            andar: "3º",
             capacidade: 12,
             valorHora: 180,
             recursos: [
@@ -48,7 +48,7 @@ export default function Salas() {
         {
             id: 4,
             nome: "Sala Executiva Delta",
-            andar: 1,
+            andar: "1º",
             capacidade: 4,
             valorHora: 60,
             recursos: [
@@ -59,7 +59,7 @@ export default function Salas() {
         {
             id: 5,
             nome: "Sala Executiva Epsilon",
-            andar: 2,
+            andar: "2º",
             capacidade: 10,
             valorHora: 150,
             recursos: [
@@ -71,7 +71,7 @@ export default function Salas() {
         {
             id: 6,
             nome: "Sala Executiva Omega",
-            andar: 3,
+            andar: "3º",
             capacidade: 30,
             valorHora: 350,
             recursos: [
@@ -84,6 +84,7 @@ export default function Salas() {
 
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [modalItem, setModalItem] = useState<any>();
+    const [filteredSalas, setFilteredSalas] = useState(salas);
 
     return (
         <Layout>
@@ -91,9 +92,9 @@ export default function Salas() {
                 Salas Disponíveis
             </Text>
             <div className="flex flex-col lg:flex-row gap-6 w-full">
-                <FilterSection />
+                <FilterSection rooms={salas} onFilterSelection={() => setFilteredSalas} />
                 <div className="w-full flex flex-wrap justify-center gap-4">
-                    {salas.map((sala) => (
+                    {filteredSalas.map((sala) => (
                         <SalaCard
                             key={sala.nome}
                             title={sala.nome}
