@@ -5,7 +5,7 @@ import { InputText } from "./InputText"
 import { Text } from "./Text"
 import { VStack } from "./VStack"
 import Link from "next/link";
-import { useForm } from "../../hooks/useForms"
+import { useForm } from "../hooks/useForms"
 
 interface IForm {
     nome: string;
@@ -25,6 +25,8 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     const senhaRegex = /^[A-Za-z0-9!@#$%^&*()_+{}\[\]:;"'<>,.?~\\|\-=]{8,}$/;
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const [nome, setNome] = useState<string>('');
     const [nomeError, setNomeError] = useState<string>('');
 
@@ -38,6 +40,8 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
     const [confSenhaError, setConfSenhaError] = useState<string>('');
 
     const checkFields = async () => {
+        setIsLoading(true);
+
         let errorsCount: number = 0;
 
         const isNameValid = nomeRegex.test(nome);
@@ -58,15 +62,33 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
             errorsCount++;
         }
 
-        if (errorsCount > 0) return;
+        const isConfPasswordValid = senhaRegex.test(confSenha);
+        if (!isConfPasswordValid) {
+            setConfSenhaError('Insira uma senha válida!');
+            errorsCount++;
+        }
+
+        if (errorsCount > 0) {
+            setIsLoading(false);
+            return;
+        }
 
         if (senha !== confSenha) {
             setSenhaError("As senhas não conferem!");
             setConfSenhaError("As senhas não conferem!");
+            setIsLoading(false);
             return;
         }
 
-        submit({nome, email, senha})
+        setTimeout(() => { }, 2000);
+
+        submit({ nome, email, senha }).then(() => {
+            setNome('');
+            setEmail('');
+            setSenha('');
+            setConfSenha('');
+            setIsLoading(false);
+        })
     }
 
     return (
@@ -122,9 +144,14 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
                 placeholder="Digite sua senha novamente"
                 className="mt-4"
             />
-            <Button title={"Cadastrar"} className="mt-8" onClick={() => {
-                checkFields();
-            }} />
+            <Button
+                title={"Cadastrar"}
+                className="mt-8"
+                onClick={() => {
+                    checkFields();
+                }}
+                loading={isLoading}
+            />
         </VStack>
     )
 }
