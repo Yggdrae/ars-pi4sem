@@ -5,23 +5,37 @@ import { InputText } from "./InputText"
 import { Text } from "./Text"
 import { VStack } from "./VStack"
 import Link from "next/link";
+import { useForm } from "../../hooks/useForms"
+
+interface IForm {
+    nome: string;
+    email: string;
+    senha: string;
+}
 
 export const RegisterForm = ({ className = "" }: { className?: string }) => {
-    const nomeRegex = /^[A-Za-z]+$/;
+    const { submit, loading, error, data } = useForm<IForm>({
+        endpoint: "/usuarios/create",
+        method: 'POST',
+        onSuccess: (res) => console.log("Enviado!", res),
+        onError: (err) => console.log("Erro!", err)
+    })
+
+    const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    const senhaRegex = /^[A-Za-z0-9]{8}$/;
+    const senhaRegex = /^[A-Za-z0-9!@#$%^&*()_+{}\[\]:;"'<>,.?~\\|\-=]{8,}$/;
 
-    const [nome, setNome] = useState<any>('');
-    const [nomeError, setNomeError] = useState<any>('');
+    const [nome, setNome] = useState<string>('');
+    const [nomeError, setNomeError] = useState<string>('');
 
-    const [email, setEmail] = useState<any>('');
-    const [emailError, setEmailError] = useState<any>('');
+    const [email, setEmail] = useState<string>('');
+    const [emailError, setEmailError] = useState<string>('');
 
-    const [senha, setSenha] = useState<any>('');
-    const [senhaError, setSenhaError] = useState<any>('')
+    const [senha, setSenha] = useState<string>('');
+    const [senhaError, setSenhaError] = useState<string>('')
 
-    const [confSenha, setConfSenha] = useState<any>('');
-    const [confSenhaError, setConfSenhaError] = useState<any>('');
+    const [confSenha, setConfSenha] = useState<string>('');
+    const [confSenhaError, setConfSenhaError] = useState<string>('');
 
     const checkFields = async () => {
         let errorsCount: number = 0;
@@ -52,7 +66,7 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
             return;
         }
 
-        
+        submit({nome, email, senha})
     }
 
     return (
