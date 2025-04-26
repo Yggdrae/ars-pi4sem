@@ -23,7 +23,7 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
 
     const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    const senhaRegex = /^[A-Za-z0-9!@#$%^&*()_+{}\[\]:;"'<>,.?~\\|\-=]{8,}$/;
+    const senhaRegex = /^(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.*[A-Za-z]).{8,}$/
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -92,7 +92,7 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
     }
 
     return (
-        <VStack className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className}`}>
+        <form className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className}`}>
             <Text className="text-center text-[20px] lg:text-[24px] text-content-primary font-family-heading font-bold">Criar Conta</Text>
             <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary font-family-heading font-bold">Preencha os campos abaixo para se cadastrar </Text>
             <InputText
@@ -146,12 +146,12 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
             />
             <Button
                 title={"Cadastrar"}
-                className="mt-8"
+                className="mt-8 w-full"
                 onClick={() => {
                     checkFields();
                 }}
                 loading={isLoading}
             />
-        </VStack>
+        </form>
     )
 }

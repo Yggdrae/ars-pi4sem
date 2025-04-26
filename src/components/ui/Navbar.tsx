@@ -57,7 +57,7 @@ export function Navbar({ children, ...props }: NavbarProps) {
               ref={menuRef}
               className="absolute right-0 mt-4 w-48 bg-[#2A2A2A] border border-content-primary/30 rounded-md shadow-lg py-2 z-50"
             >
-              {!isLoggedIn ? (
+              {isLoggedIn ? (
                 <>
                   <Link
                     href="/perfil"
