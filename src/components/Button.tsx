@@ -1,11 +1,13 @@
 import React, { ButtonHTMLAttributes } from "react";
 import { Text } from "./Text";
+import { Spinner } from "./Spinner";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
   variant?: "primary" | "secondary" | "tertiary" | "outline";
   size?: "sm" | "md" | "lg";
   title: string;
+  loading?: boolean;
   className?: string;
 }
 
@@ -14,6 +16,7 @@ const Button = ({
   variant = "primary",
   size = "md",
   title,
+  loading,
   className = "",
   ...props
 }: ButtonProps) => {
@@ -39,8 +42,14 @@ const Button = ({
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...props}
     >
-      <Text className="w-full leading-none">{title}</Text>
-      {children}
+      {loading ? (
+        <Spinner />
+      ) : (
+        <>
+          <Text className="w-full leading-none">{title}</Text>
+          {children}
+        </>
+      )}
     </button>
   );
 };

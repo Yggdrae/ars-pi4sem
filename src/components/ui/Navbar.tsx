@@ -3,19 +3,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FaHome, FaUser } from "react-icons/fa";
-import Button from "../Button";
 import { HStack } from "../HStack";
 import { VStack } from "../VStack";
+import { useAuth } from "@/context/authContext";
 
 interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
 export function Navbar({ children, ...props }: NavbarProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -57,7 +56,7 @@ export function Navbar({ children, ...props }: NavbarProps) {
               ref={menuRef}
               className="absolute right-0 mt-4 w-48 bg-[#2A2A2A] border border-content-primary/30 rounded-md shadow-lg py-2 z-50"
             >
-              {!isLoggedIn ? (
+              {isLoggedIn ? (
                 <>
                   <Link
                     href="/perfil"
