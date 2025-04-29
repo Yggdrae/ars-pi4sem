@@ -7,6 +7,7 @@ import { VStack } from "./VStack";
 import Link from "next/link";
 import { useForm } from "@/hooks/useForms";
 import { useState } from "react";
+import { useAuth } from "@/context/authContext";
 
 interface IForm {
   email: string;
@@ -14,10 +15,14 @@ interface IForm {
 }
 
 export const LoginForm = ({ className = "" }: { className?: string }) => {
+  const {userData, setUserData} = useAuth();
+
   const { submit, loading, error, data } = useForm<IForm>({
     endpoint: "/auth/login",
     method: "POST",
-    onSuccess: (res) => console.log("Enviado!", res),
+    onSuccess: (res) => {
+      setUserData(res.usuario)
+    },
     onError: (err) => console.log("Erro!", err),
   });
 
