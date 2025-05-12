@@ -43,13 +43,16 @@ const Button = ({
       {...props}
     >
       {loading ? (
-        <Spinner />
+        <div className="flex justify-center items-center h-[1em]">
+          <Spinner />
+        </div>
       ) : (
         <>
           <Text className="w-full leading-none">{title}</Text>
           {children}
         </>
       )}
+
     </button>
   );
 };

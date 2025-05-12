@@ -33,6 +33,7 @@ export function useForm<T = any>({
         } catch (err: any) {
             setError(err);
             onError?.(err)
+            console.warn(err)
         } finally {
             setLoading(false);
         }

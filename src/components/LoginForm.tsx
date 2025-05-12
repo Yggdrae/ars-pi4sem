@@ -15,31 +15,44 @@ interface IForm {
 }
 
 export const LoginForm = ({ className = "" }: { className?: string }) => {
-  const {userData, setUserData} = useAuth();
+  const { userData, setUserData, login } = useAuth();
+  const router = useRouter();
 
   const { submit, loading, error, data } = useForm<IForm>({
     endpoint: "/auth/login",
     method: "POST",
     onSuccess: (res) => {
-      setUserData(res.usuario)
+      login();
+      setUserData(res.usuario);
+      console.log(res.usuario)
+      alert(`Bem-vindo, ${res.usuario.nome.split(" ")[0]}!`);
+      router.replace("/");
     },
-    onError: (err) => console.log("Erro!", err),
+    onError: (err) => {
+      alert(err.message);
+    },
   });
 
-  const nomeRegex =  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  const nomeRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [senha, setSenha] = useState<string>("");
 
   const checkFields = async () => {
+    setIsLoading(true);
     const isEmailValid = nomeRegex.test(email);
     if (!isEmailValid) {
       setEmailError("Insira um email válido!");
+      setIsLoading(false);
       return;
     }
-    await submit({ email, senha });
+    setTimeout(async () => {
+      setIsLoading(false);
+      await submit({ email, senha });
+    }, 2000);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -64,6 +77,7 @@ export const LoginForm = ({ className = "" }: { className?: string }) => {
         placeholder="Digite seu email"
         className="mt-8"
         value={email}
+        disabled={isLoading}
         onChange={(e) => setEmail(e.target.value)}
         errorText={emailError}
       />
@@ -74,12 +88,13 @@ export const LoginForm = ({ className = "" }: { className?: string }) => {
         placeholder="Digite sua senha"
         className="mt-8"
         value={senha}
+        disabled={isLoading}
         onChange={(e) => setSenha(e.target.value)}
       />
       <Text className="mt-2 text-end text-[12px] lg:text-[14px] text-content-primary font-family-heading cursor-pointer">
         Esqueceu sua senha?
       </Text>
-      <Button title="Acessar" className="mt-8 w-full" type="submit" />{" "}
+      <Button title="Acessar" className="mt-8 w-full" type="submit" loading={isLoading} />{" "}
       {/* botão do tipo submit! */}
       <HStack className="justify-center mt-8" gap={1}>
         <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary font-family-heading">

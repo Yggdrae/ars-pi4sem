@@ -6,7 +6,7 @@ import { VStack } from "@/components/VStack";
 import { useAuth } from "@/context/authContext";
 import { useState } from "react";
 
-export const DadosTab = () => {
+export const DashboardTab = () => {
     const { userData } = useAuth();
     const [nome, setNome] = useState<string>(userData?.nome || "");
     const [email, setEmail] = useState<string>(userData?.email || "");
