@@ -11,6 +11,7 @@ interface IForm {
     nome: string;
     email: string;
     senha: string;
+    tipo: string;
 }
 
 export const RegisterForm = ({ className = "" }: { className?: string }) => {
@@ -82,7 +83,7 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
 
         setTimeout(() => { }, 2000);
 
-        submit({ nome, email, senha }).then(() => {
+        submit({ nome, email, senha, tipo: "user" }).then(() => {
             setNome('');
             setEmail('');
             setSenha('');
@@ -92,9 +93,16 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
     }
 
     return (
-        <form className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className}`}>
+        <form
+            className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className}`}
+            onSubmit={(e) => {
+                e.preventDefault(); // Impede o comportamento padrão de GET
+                checkFields();
+            }}
+        >
             <Text className="text-center text-[20px] lg:text-[24px] text-content-primary font-family-heading font-bold">Criar Conta</Text>
             <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary font-family-heading font-bold">Preencha os campos abaixo para se cadastrar </Text>
+
             <InputText
                 errorText={nomeError}
                 value={nome}
@@ -147,9 +155,6 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
             <Button
                 title={"Cadastrar"}
                 className="mt-8 w-full"
-                onClick={() => {
-                    checkFields();
-                }}
                 loading={isLoading}
             />
         </form>
