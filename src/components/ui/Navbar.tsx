@@ -3,16 +3,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FaHome, FaUser } from "react-icons/fa";
-import Button from "../Button";
 import { HStack } from "../HStack";
 import { VStack } from "../VStack";
+import { useAuth } from "@/context/authContext";
+import Button from "../Button";
 
 interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
 export function Navbar({ children, ...props }: NavbarProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, userData, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -30,6 +31,12 @@ export function Navbar({ children, ...props }: NavbarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showUserMenu]);
+
+  const handleLogout = async () => {
+    await logout();
+    setShowUserMenu(false);
+    router.replace("/");
+  };
 
   return (
     <div
@@ -57,7 +64,7 @@ export function Navbar({ children, ...props }: NavbarProps) {
               ref={menuRef}
               className="absolute right-0 mt-4 w-48 bg-[#2A2A2A] border border-content-primary/30 rounded-md shadow-lg py-2 z-50"
             >
-              {!isLoggedIn ? (
+              {isLoggedIn && userData ? (
                 <>
                   <Link
                     href="/perfil"
@@ -66,13 +73,21 @@ export function Navbar({ children, ...props }: NavbarProps) {
                   >
                     Perfil
                   </Link>
-                  <Link
-                    href="/logout"
-                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
-                    onClick={() => setShowUserMenu(false)}
+                  {userData.tipo === "admin" ? (
+                    <Link
+                      href="/administrar"
+                      className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      Administrar
+                    </Link>
+                  ) : null}
+                  <button
+                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10 w-full text-left"
+                    onClick={handleLogout}
                   >
                     Sair
-                  </Link>
+                  </button>
                 </>
               ) : (
                 <>
