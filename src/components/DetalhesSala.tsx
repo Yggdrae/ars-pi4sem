@@ -100,7 +100,7 @@ export default function RoomDetailsModal({ room, isOpen, onClose }: RoomDetailsM
             <div className="w-full md:w-1/2 p-2 sm:p-4">
               <Text className="text-content-primary text-xl sm:text-2xl font-semibold">{room.nome}</Text>
               <HStack className="flex flex-wrap gap-2 my-4">
-                {room.recursos.map((resource, index) => {
+                {room.recursos && room.recursos.map((resource, index) => {
                   const Icon = resource.icon;
                   return (
                     <HStack
