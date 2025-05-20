@@ -3,21 +3,18 @@ import Card from "./Card";
 import { HStack } from "./HStack";
 import { Text } from "./Text";
 import { VStack } from "./VStack";
+import { useEffect, useState } from "react";
+import Button from "./Button";
 
 interface FilterSectionProps {
-  rooms: {
-    id: number,
-    nome: string,
-    andar: string,
-    capacidade: number,
-    valorHora: number,
-    recursos:
-    { nome: string, icon: any }[]
-  }[]
-  onFilterSelection: () => void;
+  rooms: ISala[];
+  onFilterSelection: (salasFiltradas: ISala[]) => void;
 }
 
-export const FilterSection = ({ rooms, onFilterSelection }: FilterSectionProps) => {
+export const FilterSection = ({
+  rooms,
+  onFilterSelection,
+}: FilterSectionProps) => {
   const capacidades = ["4", "6", "8", "10", "12+"];
   const andares = ["1º", "2º", "3º", "4º"];
   const recursos = [
@@ -26,9 +23,43 @@ export const FilterSection = ({ rooms, onFilterSelection }: FilterSectionProps) 
     { nome: "Ar Condicionado", icon: FaSnowflake },
   ];
 
-  const selectedCapacidades: string[] = [];
-  const selectedAndares: string[] = [];
-  const selectedRecursos: string[] = [];
+  const [selectedCapacidades, setSelectedCapacidades] = useState<string[]>([]);
+  const [selectedAndares, setSelectedAndares] = useState<string[]>([]);
+  const [selectedRecursos, setSelectedRecursos] = useState<string[]>([]);
+
+  useEffect(() => {
+    const filtradas = rooms.filter((sala) => {
+      const capacidadeMatch =
+        selectedCapacidades.length === 0 ||
+        selectedCapacidades.includes(sala.capacidade.toString());
+
+      const andarMatch =
+        selectedAndares.length === 0 ||
+        selectedAndares.includes(sala.andar + "º");
+
+      const recursosMatch =
+        selectedRecursos.length === 0 ||
+        selectedRecursos.every((rec) =>
+          sala.recursos.some((r) => r.nome === rec)
+        );
+
+      return capacidadeMatch && andarMatch && recursosMatch;
+    });
+
+    onFilterSelection(filtradas);
+  }, [selectedCapacidades, selectedAndares, selectedRecursos, rooms]);
+
+  const toggleSelection = (
+    value: string,
+    selected: string[],
+    setter: Function
+  ) => {
+    if (selected.includes(value)) {
+      setter(selected.filter((v) => v !== value));
+    } else {
+      setter([...selected, value]);
+    }
+  };
 
   return (
     <Card className="w-full md:w-1/3 lg:w-1/4 p-4 mb-6 md:mb-0">
@@ -36,80 +67,78 @@ export const FilterSection = ({ rooms, onFilterSelection }: FilterSectionProps) 
         <Text className="text-[20px] sm:text-[20px] text-content-primary font-family-heading font-bold">
           Filtros
         </Text>
-        <Text className="text-[20px] sm:text-[14px] text-content-primary font-family-heading cursor-pointer">
-          Limpar
-        </Text>
+        <Button
+          title="Limpar"
+          onClick={() => {
+            setSelectedCapacidades([]);
+            setSelectedAndares([]);
+            setSelectedRecursos([]);
+          }}
+        />
       </HStack>
 
-      <Text className="text-[20px] sm:text-[14px] text-content-ternary font-family-heading mt-4">
-        Capacidade
-      </Text>
+      {/* CAPACIDADE */}
+      <Text className="mt-4 text-white">Capacidade</Text>
       <HStack className="flex-wrap gap-2">
         {capacidades.map((capacidade) => (
           <Card
             key={capacidade}
-            className="bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a]"
-            onClick={() => {
-              if (selectedCapacidades.find((cap) => cap === capacidade)) {
-                selectedCapacidades.splice(selectedCapacidades.indexOf(capacidade), 1);
-              } else {
-                selectedCapacidades.push(capacidade);
-              }
-            }}
+            className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
+              selectedCapacidades.includes(capacidade) ? "bg-[#444]" : ""
+            }`}
+            onClick={() =>
+              toggleSelection(
+                capacidade,
+                selectedCapacidades,
+                setSelectedCapacidades
+              )
+            }
           >
-            <Text className="text-[20px] sm:text-[14px] text-content-ternary font-family-heading">
-              {capacidade}
-            </Text>
+            <Text className="text-white">{capacidade}</Text>
           </Card>
         ))}
       </HStack>
 
-      <Text className="text-[20px] sm:text-[14px] text-content-ternary font-family-heading mt-4">
-        Andar
-      </Text>
+      {/* ANDAR */}
+      <Text className="mt-4 text-white">Andar</Text>
       <HStack className="flex-wrap gap-2">
         {andares.map((andar) => (
           <Card
             key={andar}
-            className="bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a]"
-            onClick={() => {
-              if (selectedAndares.find((and) => and === andar)) {
-                selectedAndares.splice(selectedAndares.indexOf(andar), 1);
-              } else {
-                selectedAndares.push(andar);
-              }
-            }}
+            className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
+              selectedAndares.includes(andar) ? "bg-[#444]" : ""
+            }`}
+            onClick={() =>
+              toggleSelection(andar, selectedAndares, setSelectedAndares)
+            }
           >
-            <Text className="text-[20px] sm:text-[14px] text-content-ternary font-family-heading">
-              {andar}
-            </Text>
+            <Text className="text-white">{andar}</Text>
           </Card>
         ))}
       </HStack>
 
-      <Text className="text-[20px] sm:text-[14px] text-content-ternary font-family-heading mt-4">
-        Recursos
-      </Text>
+      {/* RECURSOS */}
+      <Text className="mt-4 text-white">Recursos</Text>
       <VStack className="gap-2">
         {recursos.map((recurso) => {
           const Icon = recurso.icon;
           return (
             <Card
               key={recurso.nome}
-              className="bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a]"
-              onClick={() => {
-                if (selectedRecursos.find((rec) => rec === recurso.nome)) {
-                  selectedRecursos.splice(selectedRecursos.indexOf(recurso.nome), 1);
-                } else {
-                  selectedRecursos.push(recurso.nome);
-                }
-              }}
+              className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
+                selectedRecursos.includes(recurso.nome) ? "bg-[#444]" : ""
+              }`}
+              onClick={() =>
+                toggleSelection(
+                  recurso.nome,
+                  selectedRecursos,
+                  setSelectedRecursos
+                )
+              }
             >
               <HStack className="gap-2 items-center">
                 <Icon size={20} className="text-content-ternary" />
-                <Text className="text-[20px] sm:text-[14px] text-content-ternary font-family-heading">
-                  {recurso.nome}
-                </Text>
+                <Text className="text-white">{recurso.nome}</Text>
               </HStack>
             </Card>
           );

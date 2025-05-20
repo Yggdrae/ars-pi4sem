@@ -22,7 +22,7 @@ export default function Salas() {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalItem, setModalItem] = useState<any>();
-  const [filteredSalas, setFilteredSalas] = useState(salas);
+  const [filteredSalas, setFilteredSalas] = useState<any>(salas);
 
   return (
     <Layout>
@@ -32,15 +32,15 @@ export default function Salas() {
       <div className="flex flex-col lg:flex-row gap-6 w-full">
         <FilterSection
           rooms={salas}
-          onFilterSelection={() => setFilteredSalas}
+          onFilterSelection={(filtradas) => setFilteredSalas(filtradas)}
         />
         <div className="w-full flex flex-wrap justify-center gap-4">
           {filteredSalas &&
-            filteredSalas.map((sala) => (
+            filteredSalas.map((sala: ISala) => (
               <SalaCard
                 key={sala.numero}
                 title={"Sala " + sala.numero}
-                floor={sala.andar}
+                floor={sala.andar + "º"}
                 capacity={1}
                 hourValue={sala.valorHora}
                 backgroundImage={require("@/assets/conference-room.png")}
