@@ -21,8 +21,18 @@ export function useSalas() {
         return response;
     }, [])
 
+    const getDestaques = useCallback(async () => {
+        const response = await api({
+            url: `http://localhost:3333/salas/destaques`,
+            method: 'GET'
+        })
+
+        return response.data;
+    }, [])
+
     return {
         getSalas,
         getSalaById,
+        getDestaques,
     }
 }

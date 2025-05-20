@@ -6,26 +6,26 @@ interface DestaqueCardProps {
   backgroundImage: string | StaticImageData;
   backgroundAlt: string;
   title: string;
-  description: string;
   badges?: string[];
+  capacity?: number;
   children?: ReactNode;
   imagePosition?: string;
   objectFit?: "cover" | "contain" | "fill" | "none";
+  hourValue?: number;
   className?: string;
-  buttonText?: string;
 }
 
 export const DestaqueCard = ({
   backgroundImage,
   backgroundAlt,
   title,
-  description,
   badges = [],
+  capacity,
   imagePosition = "center",
   objectFit = "cover",
+  hourValue,
   children,
   className = "",
-  buttonText = "Reservar",
 }: DestaqueCardProps) => {
   return (
     <div
@@ -44,17 +44,31 @@ export const DestaqueCard = ({
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P/LfwAJNAO5XLPYgwAAAABJRU5ErkJggg=="
           style={{ objectFit, objectPosition: imagePosition }}
         />
+
+        <div
+          className="
+            absolute top-2 right-2
+            bg-content-primary text-black
+            px-3 py-1 rounded-full
+            text-sm font-semibold
+            shadow-md
+          "
+        >
+          {`R$ ${hourValue}/h`}
+        </div>
       </div>
 
       {/* Conteúdo */}
-      <div className="flex flex-col flex-grow p-5 gap-4">
+      <div className="flex flex-col flex-grow p-5 gap-2">
         <h2 className="text-xl sm:text-2xl font-semibold leading-snug">{title}</h2>
 
-        <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
-          {description}
-        </p>
+        {capacity && (
+          <p className="text-sm text-content-ternary">
+            Capacidade para {capacity} pessoas
+          </p>
+        )}
 
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-2">
           {badges.map((badge, index) => (
             <span
               key={index}
@@ -66,14 +80,6 @@ export const DestaqueCard = ({
         </div>
 
         {children && <div className="mt-2">{children}</div>}
-
-        <div className="mt-auto">
-          <Button
-            title={buttonText}
-            className="mt-4 w-full bg-content-primary text-black"
-            size="lg"
-          />
-        </div>
       </div>
     </div>
   );
