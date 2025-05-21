@@ -2,37 +2,46 @@ import { useCallback } from "react";
 import api from "../../services/api";
 
 export function useSalas() {
+  const getSalas = useCallback(async () => {
+    const response = await api({
+      url: `http://localhost:3333/salas`,
+      method: "GET",
+    });
 
-    const getSalas = useCallback(async () => {
-        const response = await api({
-            url: `http://localhost:3333/salas`,
-            method: 'GET'
-        })
+    return response.data;
+  }, []);
 
-        return response.data;
-    }, [])
+  const getSalasFull = useCallback(async () => {
+    const response = await api({
+      url: `http://localhost:3333/salas/full`,
+      method: "GET",
+    });
 
-    const getSalaById = useCallback(async (id: number) => {
-        const response = await api({
-            url: `http://localhost:3333/salas/${id}`,
-            method: 'GET'
-        })
+    return response.data;
+  }, []);
 
-        return response;
-    }, [])
+  const getSalaById = useCallback(async (id: number) => {
+    const response = await api({
+      url: `http://localhost:3333/salas/${id}`,
+      method: "GET",
+    });
 
-    const getDestaques = useCallback(async () => {
-        const response = await api({
-            url: `http://localhost:3333/salas/destaques`,
-            method: 'GET'
-        })
+    return response;
+  }, []);
 
-        return response.data;
-    }, [])
+  const getDestaques = useCallback(async () => {
+    const response = await api({
+      url: `http://localhost:3333/salas/destaques`,
+      method: "GET",
+    });
 
-    return {
-        getSalas,
-        getSalaById,
-        getDestaques,
-    }
+    return response.data;
+  }, []);
+
+  return {
+    getSalas,
+    getSalasFull,
+    getSalaById,
+    getDestaques,
+  };
 }

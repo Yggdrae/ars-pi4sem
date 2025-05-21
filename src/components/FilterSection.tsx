@@ -43,7 +43,7 @@ export const FilterSection = ({
       const recursosMatch =
         selectedRecursos.length === 0 ||
         selectedRecursos.every((rec) =>
-          sala.recursos.some((r) => r.nome === rec)
+          sala.salasRecursos.some((r) => r.recurso.nome === rec)
         );
 
       return capacidadeMatch && andarMatch && recursosMatch;

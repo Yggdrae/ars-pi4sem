@@ -9,11 +9,11 @@ import { useEffect, useState } from "react";
 import { FaSnowflake, FaTv, FaVideo, FaWifi } from "react-icons/fa";
 
 export default function Salas() {
-  const { getSalas } = useSalas();
+  const { getSalasFull } = useSalas();
   const [salas, setSalas] = useState([]);
   useEffect(() => {
     const fetchSalas = async () => {
-      const data = await getSalas();
+      const data = await getSalasFull();
       setSalas(data);
       setFilteredSalas(data);
     };
@@ -23,6 +23,15 @@ export default function Salas() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalItem, setModalItem] = useState<any>();
   const [filteredSalas, setFilteredSalas] = useState<any>(salas);
+
+  function bufferArrayToBase64(data: number[]): string {
+    const uint8Array = new Uint8Array(data);
+    const binaryString = uint8Array.reduce(
+      (acc, byte) => acc + String.fromCharCode(byte),
+      ""
+    );
+    return "data:image/png;base64," + btoa(binaryString);
+  }
 
   return (
     <Layout>
@@ -43,7 +52,7 @@ export default function Salas() {
                 floor={sala.andar + "º"}
                 capacity={sala.capacidade}
                 hourValue={sala.valorHora}
-                backgroundImage={require("@/assets/conference-room.png")}
+                backgroundImage={sala.salasImagens.length > 0 ? bufferArrayToBase64(sala.salasImagens[0].imagem.data) : require("@/assets/conference-room.png")}
                 backgroundAlt={`Foto da sala ${sala.nome}`}
                 onClick={() => {
                   setModalIsOpen(true);
