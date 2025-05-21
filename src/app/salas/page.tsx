@@ -41,7 +41,7 @@ export default function Salas() {
                 key={sala.numero}
                 title={"Sala " + sala.numero}
                 floor={sala.andar + "º"}
-                capacity={1}
+                capacity={sala.capacidade}
                 hourValue={sala.valorHora}
                 backgroundImage={require("@/assets/conference-room.png")}
                 backgroundAlt={`Foto da sala ${sala.nome}`}

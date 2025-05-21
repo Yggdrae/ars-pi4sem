@@ -31,7 +31,10 @@ export const FilterSection = ({
     const filtradas = rooms.filter((sala) => {
       const capacidadeMatch =
         selectedCapacidades.length === 0 ||
-        selectedCapacidades.includes(sala.capacidade.toString());
+        selectedCapacidades.some((cap) => {
+          if (cap === "12+") return sala.capacidade >= 12;
+          return sala.capacidade === parseInt(cap);
+        });
 
       const andarMatch =
         selectedAndares.length === 0 ||
@@ -83,9 +86,8 @@ export const FilterSection = ({
         {capacidades.map((capacidade) => (
           <Card
             key={capacidade}
-            className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
-              selectedCapacidades.includes(capacidade) ? "bg-[#444]" : ""
-            }`}
+            className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${selectedCapacidades.includes(capacidade) ? "bg-[#444]" : ""
+              }`}
             onClick={() =>
               toggleSelection(
                 capacidade,
@@ -105,9 +107,8 @@ export const FilterSection = ({
         {andares.map((andar) => (
           <Card
             key={andar}
-            className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
-              selectedAndares.includes(andar) ? "bg-[#444]" : ""
-            }`}
+            className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${selectedAndares.includes(andar) ? "bg-[#444]" : ""
+              }`}
             onClick={() =>
               toggleSelection(andar, selectedAndares, setSelectedAndares)
             }
@@ -125,9 +126,8 @@ export const FilterSection = ({
           return (
             <Card
               key={recurso.nome}
-              className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
-                selectedRecursos.includes(recurso.nome) ? "bg-[#444]" : ""
-              }`}
+              className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${selectedRecursos.includes(recurso.nome) ? "bg-[#444]" : ""
+                }`}
               onClick={() =>
                 toggleSelection(
                   recurso.nome,
