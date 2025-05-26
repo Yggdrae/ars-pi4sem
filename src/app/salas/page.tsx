@@ -6,7 +6,6 @@ import { Text } from "@/components/Text";
 import { Layout } from "@/components/ui/Layout";
 import { useSalas } from "@/hooks/useSalas";
 import { useEffect, useState } from "react";
-import { FaSnowflake, FaTv, FaVideo, FaWifi } from "react-icons/fa";
 
 export default function Salas() {
   const { getSalasFull } = useSalas();
@@ -52,7 +51,16 @@ export default function Salas() {
                 floor={sala.andar + "º"}
                 capacity={sala.capacidade}
                 hourValue={sala.valorHora}
-                backgroundImage={sala.salasImagens.length > 0 ? bufferArrayToBase64(sala.salasImagens[0].imagem.data) : require("@/assets/conference-room.png")}
+                resources={sala.salasRecursos.map((recurso) => {
+                  return {
+                    nome: recurso.recurso.nome,
+                  };
+                })}
+                backgroundImage={
+                  sala.salasImagens.length > 0
+                    ? bufferArrayToBase64(sala.salasImagens[0].imagem.data)
+                    : require("@/assets/conference-room.png")
+                }
                 backgroundAlt={`Foto da sala ${sala.nome}`}
                 onClick={() => {
                   setModalIsOpen(true);
@@ -62,11 +70,13 @@ export default function Salas() {
             ))}
         </div>
       </div>
-      <DetalhesSala
-        room={modalItem}
-        isOpen={modalIsOpen}
-        onClose={() => setModalIsOpen(false)}
-      />
+      {modalItem && modalIsOpen && (
+        <DetalhesSala
+          room={modalItem}
+          isOpen={modalIsOpen}
+          onClose={() => setModalIsOpen(false)}
+        />
+      )}
     </Layout>
   );
 }

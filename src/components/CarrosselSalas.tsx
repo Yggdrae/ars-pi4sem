@@ -1,0 +1,129 @@
+import React, { useRef, useState } from "react";
+import Image from "next/image";
+import { Text } from "./Text";
+
+interface SalaImagem {
+  imagem: {
+    data: number[];
+  };
+}
+
+interface ImageCarouselProps {
+  images: SalaImagem[];
+}
+
+function bufferArrayToBase64(data: number[]): string {
+  const uint8Array = new Uint8Array(data);
+  const binaryString = uint8Array.reduce(
+    (acc, byte) => acc + String.fromCharCode(byte),
+    ""
+  );
+  return "data:image/png;base64," + btoa(binaryString);
+}
+
+export default function ImageCarousel({ images }: ImageCarouselProps) {
+  const [selected, setSelected] = useState(0);
+  const thumbsRef = useRef<HTMLDivElement>(null);
+  if (!images || images.length === 0) return null;
+
+  const total = images.length;
+  const mainSrc = bufferArrayToBase64(images[selected].imagem.data);
+
+  const goPrev = () => setSelected((prev) => (prev - 1 + total) % total);
+  const goNext = () => setSelected((prev) => (prev + 1) % total);
+
+  const scrollThumbnails = (direction: "left" | "right") => {
+    if (thumbsRef.current) {
+      const scrollAmount = 120; // ajustável
+      thumbsRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  return (
+    <div className="w-full">
+      {/* Imagem principal com aspecto fixo */}
+      <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl mb-3 bg-black">
+        <Image
+          src={mainSrc}
+          alt={`Imagem ${selected + 1}`}
+          fill
+          className="object-cover"
+        />
+        {total > 1 && (
+          <>
+            <button
+              onClick={goPrev}
+              className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white px-2 py-1 rounded-full"
+            >
+              <Text>{"<"}</Text>
+            </button>
+            <button
+              onClick={goNext}
+              className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white px-2 py-1 rounded-full"
+            >
+              <Text>{">"}</Text>
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Miniaturas com setas */}
+      {total > 1 && (
+        <div className="relative w-full overflow-hidden mt-2">
+          {/* Container com setas e thumbnails dentro de espaço controlado */}
+          <div className="relative flex items-center w-full">
+            {/* Botão esquerdo */}
+            <button
+              onClick={() => scrollThumbnails("left")}
+              className="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-black/60 via-black/30 to-transparent"
+            >
+              ⟵
+            </button>
+
+            {/* Thumbnails scrolláveis com limite máximo de largura */}
+            <div
+              ref={thumbsRef}
+              className="flex gap-2 overflow-hidden scrollbar-hide w-full px-8"
+              style={{ scrollBehavior: "smooth" }}
+            >
+              {images.map((img, i) => {
+                const thumbSrc = bufferArrayToBase64(img.imagem.data);
+                return (
+                  <div
+                    key={i}
+                    onClick={() => setSelected(i)}
+                    className={`flex-shrink-0 cursor-pointer border-2 rounded-lg transition-all ${
+                      selected === i
+                        ? "border-content-primary scale-105"
+                        : "border-transparent"
+                    }`}
+                  >
+                    <div className="w-[100px] h-[60px] relative rounded-lg overflow-hidden">
+                      <Image
+                        src={thumbSrc}
+                        alt={`Thumbnail ${i + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Botão direito */}
+            <button
+              onClick={() => scrollThumbnails("right")}
+              className="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-black/60 via-black/30 to-transparent"
+            >
+              ⟶
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
