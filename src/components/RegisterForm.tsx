@@ -6,6 +6,7 @@ import { Text } from "./Text";
 import { VStack } from "./VStack";
 import Link from "next/link";
 import { useForm } from "../hooks/useForms";
+import { useToast } from "@/context/ToastContext";
 
 interface IForm {
   nome: string;
@@ -15,157 +16,160 @@ interface IForm {
 }
 
 export const RegisterForm = ({ className = "" }: { className?: string }) => {
-  const { submit, loading, error, data } = useForm<IForm>({
+  const { showToast } = useToast();
+  const { submit, loading } = useForm<IForm>({
     endpoint: "/usuarios/create",
     method: "POST",
-    onSuccess: (res) => {
-      alert("Cadastro realizado com sucesso!");
-      window.location.href = "/login";
-    },
     onError: (err) => console.log("Erro!", err),
   });
 
-  const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
-  const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-  const senhaRegex = /^(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.*[A-Za-z]).{8,}$/;
+  const nomeRegex = /^[A-Za-zÀ-ÿ]+(?: [A-Za-zÀ-ÿ]+)+$/;
+  const emailRegex = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,}$/;
+  const senhaRegex =
+    /^(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [nome, setNome] = useState<string>("");
-  const [nomeError, setNomeError] = useState<string>("");
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confSenha, setConfSenha] = useState("");
 
-  const [email, setEmail] = useState<string>("");
-  const [emailError, setEmailError] = useState<string>("");
+  const [nomeError, setNomeError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [senhaError, setSenhaError] = useState("");
+  const [confSenhaError, setConfSenhaError] = useState("");
 
-  const [senha, setSenha] = useState<string>("");
-  const [senhaError, setSenhaError] = useState<string>("");
+  const validateNome = (value: string) => {
+    if (!nomeRegex.test(value)) return "Digite nome e sobrenome.";
+    return "";
+  };
 
-  const [confSenha, setConfSenha] = useState<string>("");
-  const [confSenhaError, setConfSenhaError] = useState<string>("");
+  const validateEmail = (value: string) => {
+    if (!emailRegex.test(value)) return "Digite um email válido.";
+    return "";
+  };
 
-  const checkFields = async () => {
+  const validateSenha = (value: string) => {
+    if (!senhaRegex.test(value))
+      return "Mín. 8 caracteres com letra, número e símbolo.";
+    return "";
+  };
+
+  const validateConfirmacao = (value: string, original: string) => {
+    if (value !== original) return "As senhas não conferem.";
+    return "";
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     setIsLoading(true);
 
-    let errorsCount: number = 0;
+    const nomeErr = validateNome(nome);
+    const emailErr = validateEmail(email);
+    const senhaErr = validateSenha(senha);
+    const confErr = validateConfirmacao(confSenha, senha);
 
-    const isNameValid = nomeRegex.test(nome);
-    if (!isNameValid) {
-      setNomeError("Insira um nome válido!");
-      errorsCount++;
-    }
+    setNomeError(nomeErr);
+    setEmailError(emailErr);
+    setSenhaError(senhaErr);
+    setConfSenhaError(confErr);
 
-    const isEmailValid = emailRegex.test(email);
-    if (!isEmailValid) {
-      setEmailError("Insira um email válido!");
-      errorsCount++;
-    }
-
-    const isPasswordValid = senhaRegex.test(senha);
-    if (!isPasswordValid) {
-      setSenhaError("Insira uma senha válida!");
-      errorsCount++;
-    }
-
-    const isConfPasswordValid = senhaRegex.test(confSenha);
-    if (!isConfPasswordValid) {
-      setConfSenhaError("Insira uma senha válida!");
-      errorsCount++;
-    }
-
-    if (errorsCount > 0) {
+    if (nomeErr || emailErr || senhaErr || confErr) {
       setIsLoading(false);
       return;
     }
 
-    if (senha !== confSenha) {
-      setSenhaError("As senhas não conferem!");
-      setConfSenhaError("As senhas não conferem!");
+    setTimeout(async () => {
+      await submit({ nome, email, senha, tipo: "user" });
+      showToast("Cadastro realizado com sucesso!", "success");
       setIsLoading(false);
-      return;
-    }
-
-    setTimeout(() => {}, 2000);
-
-    submit({ nome, email, senha, tipo: "user" }).then(() => {
       setNome("");
       setEmail("");
       setSenha("");
       setConfSenha("");
-      setIsLoading(false);
-    });
+    }, 2000);
   };
 
   return (
     <form
-      className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className} items-center justify-center`}
-      onSubmit={(e) => {
-        e.preventDefault();
-        checkFields();
-      }}
+      onSubmit={handleSubmit}
+      className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className}`}
     >
-      <Text className="text-center text-[20px] lg:text-[24px] text-content-primary font-family-heading font-bold">
+      <Text className="text-center text-[20px] lg:text-[24px] text-content-primary font-bold">
         Criar Conta
       </Text>
-      <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary font-family-heading font-bold">
-        Preencha os campos abaixo para se cadastrar{" "}
+      <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary">
+        Preencha os campos abaixo para se cadastrar
       </Text>
+
       <InputText
-        errorText={nomeError}
-        value={nome}
-        onChange={(e) => {
-          setNome(e.target.value);
-          setNomeError("");
-        }}
         id="nome"
         label="Nome Completo"
         placeholder="Digite seu nome"
+        value={nome}
+        onChange={(e) => {
+          setNome(e.target.value);
+          setNomeError(validateNome(e.target.value));
+        }}
+        onBlur={() => setNomeError(validateNome(nome))}
+        errorText={nomeError}
         className="mt-4"
       />
+
       <InputText
-        errorText={emailError}
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value);
-          setEmailError("");
-        }}
         id="email"
         label="Email"
         placeholder="Digite seu email"
+        value={email}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          setEmailError(validateEmail(e.target.value));
+        }}
+        onBlur={() => setEmailError(validateEmail(email))}
+        errorText={emailError}
         className="mt-4"
       />
+
       <InputText
-        errorText={senhaError}
+        id="senha"
+        label="Senha"
+        placeholder="Digite sua senha"
+        type="password"
         value={senha}
         onChange={(e) => {
           setSenha(e.target.value);
-          setSenhaError("");
+          setSenhaError(validateSenha(e.target.value));
         }}
-        id="password"
-        type="password"
-        label="Senha"
-        placeholder="Digite sua senha"
+        onBlur={() => setSenhaError(validateSenha(senha))}
+        errorText={senhaError}
         className="mt-4"
       />
+
       <InputText
-        errorText={confSenhaError}
+        id="confirmarSenha"
+        label="Confirme sua Senha"
+        placeholder="Digite sua senha novamente"
+        type="password"
         value={confSenha}
         onChange={(e) => {
           setConfSenha(e.target.value);
-          setConfSenhaError("");
+          setConfSenhaError(validateConfirmacao(e.target.value, senha));
         }}
-        id="passconfirm"
-        type="password"
-        label="Confirme sua Senha"
-        placeholder="Digite sua senha novamente"
+        onBlur={() => setConfSenhaError(validateConfirmacao(confSenha, senha))}
+        errorText={confSenhaError}
         className="mt-4"
       />
-      <Button title={"Cadastrar"} className="mt-8 w-full" loading={isLoading} />
+
+      <Button title="Cadastrar" className="mt-8 w-full" loading={isLoading} />
+
       <HStack className="justify-center mt-8" gap={1}>
-        <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary font-family-heading">
+        <Text className="text-[12px] lg:text-[14px] text-content-ternary">
           Já possui uma conta?
         </Text>
-        <Link href={"/login"} passHref>
-          <Text className="text-center text-[12px] lg:text-[14px] text-content-primary font-family-heading cursor-pointer">
+        <Link href="/login" passHref>
+          <Text className="text-[12px] lg:text-[14px] text-content-primary cursor-pointer">
             Faça Login
           </Text>
         </Link>

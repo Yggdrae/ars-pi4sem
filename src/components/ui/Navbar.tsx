@@ -88,7 +88,7 @@ export function Navbar({ children, ...props }: NavbarProps) {
                     </Link>
                   ) : null}
                   <button
-                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10 w-full text-left"
+                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10 w-full text-left cursor-pointer"
                     onClick={handleLogout}
                   >
                     Sair

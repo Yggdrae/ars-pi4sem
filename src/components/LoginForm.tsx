@@ -1,6 +1,5 @@
 import { useRouter } from "next/navigation";
 import Button from "./Button";
-import { HStack } from "./HStack";
 import { InputText } from "./InputText";
 import { Text } from "./Text";
 import { VStack } from "./VStack";
@@ -10,17 +9,12 @@ import { useAuth } from "@/context/authContext";
 import axios from "axios";
 import { useToast } from "@/context/ToastContext";
 
-interface IForm {
-  email: string;
-  senha: string;
-}
-
 export const LoginForm = ({ className = "" }: { className?: string }) => {
   const { login } = useAuth();
-  const { showToast } = useToast(); 
+  const { showToast } = useToast();
   const router = useRouter();
-  const [email, setEmail] = useState<string>("");
-  const [senha, setSenha] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -36,11 +30,9 @@ export const LoginForm = ({ className = "" }: { className?: string }) => {
         );
         await login();
         showToast("Login realizado com sucesso!", "success");
-        //alert("Login realizado com sucesso!");
         router.replace("/");
-      } catch (err: any) {
+      } catch {
         showToast("Erro no login. Verifique suas credenciais.", "error");
-        //alert("Erro no login. Verifique suas credenciais.");
       } finally {
         setIsLoading(false);
       }
@@ -48,15 +40,18 @@ export const LoginForm = ({ className = "" }: { className?: string }) => {
   };
 
   return (
-    <form onSubmit={handleLogin} className={`bg-[#2A2A2A] p-6 ${className}`}>
-      <Text className="text-center text-[20px] font-bold text-content-primary">
-        Acessar Conta
+    <form
+      onSubmit={handleLogin}
+      className={`w-full max-w-sm animate-fade-in flex flex-col gap-6 ${className}`}
+    >
+      <Text className="text-center text-[22px] font-bold text-content-primary">
+        Bem-vindo de volta
       </Text>
+
       <InputText
         id="email"
         label="Email"
         placeholder="Digite seu email"
-        className="mt-8"
         value={email}
         disabled={isLoading}
         onChange={(e) => setEmail(e.target.value)}
@@ -66,17 +61,26 @@ export const LoginForm = ({ className = "" }: { className?: string }) => {
         type="password"
         label="Senha"
         placeholder="Digite sua senha"
-        className="mt-8"
         value={senha}
         disabled={isLoading}
         onChange={(e) => setSenha(e.target.value)}
       />
+
       <Button
         title="Acessar"
-        className="mt-8 w-full"
         type="submit"
         loading={isLoading}
+        className="w-full"
       />
+
+      <div className="text-right">
+        <Link
+          href="/cadastro"
+          className="text-sm text-content-ternary hover:text-content-primary transition"
+        >
+          Não tenho uma conta!
+        </Link>
+      </div>
     </form>
   );
 };
