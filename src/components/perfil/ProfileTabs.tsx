@@ -3,7 +3,6 @@ import { HStack } from "../HStack";
 import { VStack } from "../VStack";
 import { DadosTab } from "./tabs/DadosTab";
 import { PagamentoTab } from "./tabs/PagamentoTab";
-import { NotificacoesTab } from "./tabs/NotificacoesTab";
 import { HistoricoTab } from "./tabs/HistoricoTab";
 
 interface ProfileTabsProps {
@@ -14,7 +13,6 @@ interface ProfileTabsProps {
 const tabs = [
     { label: "Meus Dados", key: "dados" },
     { label: "Pagamento", key: "pagamento" },
-    { label: "Notificações", key: "notificacoes" },
     { label: "Histórico de Reservas", key: "historico" },
 ];
 
@@ -39,7 +37,6 @@ export const ProfileTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
             </div>
             {selectedTab === "dados" && <DadosTab />}
             {selectedTab === "pagamento" && <PagamentoTab />}
-            {selectedTab === "notificacoes" && <NotificacoesTab />}
             {selectedTab === "historico" && <HistoricoTab />}
         </VStack>
     );
