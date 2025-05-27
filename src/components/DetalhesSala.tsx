@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { HStack } from "@/components/HStack";
 import { VStack } from "@/components/VStack";
-import Button from "@/components/Button";
 import Image from "next/image";
 import Card from "./Card";
 import { Text } from "./Text";
@@ -10,6 +9,7 @@ import ImageCarousel from "./CarrosselSalas";
 import { useHorarios } from "@/hooks/useHorarios";
 import { IHorario } from "@/interfaces/IHorario";
 import { Spinner } from "./Spinner";
+import Button from "./Button";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -33,7 +33,7 @@ export default function RoomDetailsModal({
   });
   const [showPaymentScreen, setShowPaymentScreen] = useState(false);
   const [loadingPixMethod, setLoadingPixMethod] = useState(false);
-  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);  
 
   useEffect(() => {
     setRange(null);
@@ -102,7 +102,7 @@ export default function RoomDetailsModal({
 
   return createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 py-8 overflow-auto">
-      <Card className="relative w-full max-w-6xl xl:max-w-[1200px] min-h-[600px] bg-content-secondary p-4 sm:p-6 overflow-hidden">
+      <Card className="relative w-full max-w-4xl xl:max-w-[1000px] min-h-[500px] bg-content-secondary p-4 sm:p-6 overflow-hidden">
         <button
           onClick={() => {
             onClose();
@@ -117,9 +117,8 @@ export default function RoomDetailsModal({
 
         <div className="flex w-full h-full transition-all duration-500 ease-in-out">
           <div
-            className={`w-full transition-transform duration-500 ease-in-out ${
-              showPaymentScreen ? "-translate-x-500 absolute" : "relative"
-            }`}
+            className={`w-full transition-transform duration-500 ease-in-out ${showPaymentScreen ? "-translate-x-500 absolute" : "relative"
+              }`}
           >
             <VStack className="gap-6">
               <div className="flex flex-col md:flex-row gap-4">
@@ -181,11 +180,10 @@ export default function RoomDetailsModal({
                         <button
                           key={time}
                           onClick={() => onSlotClick(time)}
-                          className={`py-2 rounded-lg text-sm focus:outline-none transition-colors cursor-pointer ${
-                            selected
-                              ? "bg-content-primary text-gray-900"
-                              : "bg-[#2a2a2a] text-gray-200 hover:bg-[#3a3a3a]"
-                          }`}
+                          className={`py-2 rounded-lg text-sm focus:outline-none transition-colors cursor-pointer ${selected
+                            ? "bg-content-primary text-gray-900"
+                            : "bg-[#2a2a2a] text-gray-200 hover:bg-[#3a3a3a]"
+                            }`}
                         >
                           {time}
                         </button>
@@ -217,13 +215,16 @@ export default function RoomDetailsModal({
           </div>
 
           <div
-            className={`w-full transition-transform duration-500 ease-in-out ${
-              showPaymentScreen
-                ? "translate-x-0 relative"
-                : "translate-x-full absolute"
-            }`}
+            className={`w-full transition-transform duration-500 ease-in-out ${showPaymentScreen
+              ? "translate-x-0 relative"
+              : "translate-x-full absolute"
+              }`}
           >
-            <Button title="Voltar" onClick={() => setShowPaymentScreen(false)} />
+            <Button title="Voltar" onClick={() => {
+              setShowPaymentScreen(false);
+              setQrCode(null);
+              setLoadingPixMethod(false);
+            }} />
             <VStack className="gap-4">
               <Text className="text-2xl text-center text-content-primary font-bold mb-4">
                 Escolha o método de pagamento
@@ -232,14 +233,16 @@ export default function RoomDetailsModal({
                 title="Pagar com PIX"
                 onClick={handlePixCheckout}
                 className="w-full"
+                loading={loadingPixMethod}
               />
-              <Button
-                title="Cartão de Crédito (em breve)"
-                disabled
-                variant="outline"
-                className="w-full"
-              />
-              {loadingPixMethod && <Spinner className="border-white"/>}
+              {loadingPixMethod === false && qrCode === null && (
+                <Button
+                  title="Cartão de Crédito"
+                  disabled
+                  variant="outline"
+                  className="w-full"
+                />
+              )}
               {qrCode && (
                 <img src={qrCode} alt="QR Code" className="w-64 h-64 self-center" />
               )}
