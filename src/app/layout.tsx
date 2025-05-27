@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/authContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 export const metadata: Metadata = {
   title: "Eldorado",
@@ -15,10 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={`antialiased h-screen bg-content-secondary`}
-      >
-        <AuthProvider>{children}</AuthProvider>
+      <body className={`antialiased h-screen bg-content-secondary`}>
+        <AuthProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

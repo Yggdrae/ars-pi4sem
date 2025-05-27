@@ -7,6 +7,7 @@ import { HStack } from "../HStack";
 import { VStack } from "../VStack";
 import { useAuth } from "@/context/authContext";
 import Button from "../Button";
+import { useToast } from "@/context/ToastContext";
 
 interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
@@ -14,6 +15,7 @@ interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Navbar({ children, ...props }: NavbarProps) {
   const { isLoggedIn, userData, logout } = useAuth();
+  const { showToast } = useToast();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -33,9 +35,12 @@ export function Navbar({ children, ...props }: NavbarProps) {
   }, [showUserMenu]);
 
   const handleLogout = async () => {
-    await logout();
-    setShowUserMenu(false);
-    router.replace("/");
+    setTimeout(async () => {
+      await logout();
+      showToast("Logout realizado com sucesso!", "success");
+      setShowUserMenu(false);
+      router.replace("/");
+    }, 2000);
   };
 
   return (

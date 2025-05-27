@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/authContext";
 import axios from "axios";
+import { useToast } from "@/context/ToastContext";
 
 interface IForm {
   email: string;
@@ -16,6 +17,7 @@ interface IForm {
 
 export const LoginForm = ({ className = "" }: { className?: string }) => {
   const { login } = useAuth();
+  const { showToast } = useToast(); 
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
@@ -33,10 +35,12 @@ export const LoginForm = ({ className = "" }: { className?: string }) => {
           { withCredentials: true }
         );
         await login();
-        alert("Login realizado com sucesso!");
+        showToast("Login realizado com sucesso!", "success");
+        //alert("Login realizado com sucesso!");
         router.replace("/");
       } catch (err: any) {
-        alert("Erro no login. Verifique suas credenciais.");
+        showToast("Erro no login. Verifique suas credenciais.", "error");
+        //alert("Erro no login. Verifique suas credenciais.");
       } finally {
         setIsLoading(false);
       }
