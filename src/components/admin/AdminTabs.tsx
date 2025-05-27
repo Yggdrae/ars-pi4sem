@@ -1,9 +1,8 @@
 import { Text } from "../Text";
-import { HStack } from "../HStack";
 import { VStack } from "../VStack";
-import { DadosTab } from "./tabs/DadosTab";
-import { PagamentoTab } from "./tabs/PagamentoTab";
-import { HistoricoTab } from "./tabs/HistoricoTab";
+import { DashboardTab } from "./tabs/DashboardTab";
+import { ReservasTab } from "./tabs/ReservasTab";
+import { SalasTab } from "./tabs/SalasTab";
 
 interface ProfileTabsProps {
     selectedTab: string;
@@ -11,12 +10,12 @@ interface ProfileTabsProps {
 }
 
 const tabs = [
-    { label: "Meus Dados", key: "dados" },
-    { label: "Pagamento", key: "pagamento" },
-    { label: "Histórico de Reservas", key: "historico" },
+    { label: "Estatísticas", key: "dashboard" },
+    { label: "Reservas", key: "reservas" },
+    { label: "Salas", key: "salas" },
 ];
 
-export const ProfileTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
+export const AdminTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
     return (
         <VStack>
             <div className="flex flex-wrap gap-4 mt-6 border-b border-[#333]">
@@ -35,9 +34,9 @@ export const ProfileTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
                     </button>
                 ))}
             </div>
-            {selectedTab === "dados" && <DadosTab />}
-            {selectedTab === "pagamento" && <PagamentoTab />}
-            {selectedTab === "historico" && <HistoricoTab />}
+            {selectedTab === "dashboard" && <DashboardTab />}
+            {selectedTab === "reservas" && <ReservasTab />}
+            {selectedTab === "salas" && <SalasTab />}
         </VStack>
     );
 };
