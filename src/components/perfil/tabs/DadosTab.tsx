@@ -1,6 +1,7 @@
 import Button from "@/components/Button";
 import { HStack } from "@/components/HStack";
 import { InputText } from "@/components/InputText";
+import { Modal } from "@/components/Modal";
 import { Text } from "@/components/Text";
 import { VStack } from "@/components/VStack";
 import { useAuth } from "@/context/authContext";
@@ -12,9 +13,47 @@ export const DadosTab = () => {
   const [email, setEmail] = useState<string>(userData?.email || "");
   const [editView, setEditView] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalVisivel, setModalVisivel] = useState<boolean>(false);
+  const [senha, setSenha] = useState<string>("");
+  const [confSenha, setConfSenha] = useState<string>("");
 
   return (
     <VStack className="gap-6 mt-6">
+      <Modal
+        isOpen={modalVisivel}
+        onClose={() => setModalVisivel(false)}
+        title="Alterar Senha"
+        footer={
+          <>
+            <Button
+              title="Cancelar"
+              variant="secondary"
+              onClick={() => setModalVisivel(false)}
+            />
+            <Button title="Salvar" onClick={() => {}} />
+          </>
+        }
+      >
+        <VStack className="gap-4">
+          <InputText
+            id="senha"
+            label="Senha"
+            value={senha}
+            onChange={(e) => {
+              setSenha(e.target.value);
+            }}
+            placeholder="Digite a nova senha"
+          />
+          <InputText
+            id="confSenha"
+            label="Confirmar Senha"
+            value={confSenha}
+            onChange={(e) => setConfSenha(e.target.value)}
+            placeholder="Confirme a nova senha"
+          />
+        </VStack>
+      </Modal>
+
       <HStack className="justify-between items-center">
         <Text className="text-lg font-semibold text-content-primary">
           Dados Pessoais
@@ -76,7 +115,7 @@ export const DadosTab = () => {
         <Text className="text-lg font-semibold text-content-primary">
           Segurança
         </Text>
-        <Button title="Alterar Senha" variant="secondary" className="w-fit" />
+        <Button title="Alterar Senha" variant="secondary" className="w-fit" onClick={() => setModalVisivel(true)} />
       </VStack>
     </VStack>
   );
