@@ -10,7 +10,6 @@ interface ProfileTabsProps {
 }
 
 const tabs = [
-    { label: "Estatísticas", key: "dashboard" },
     { label: "Reservas", key: "reservas" },
     { label: "Salas", key: "salas" },
 ];
@@ -34,9 +33,9 @@ export const AdminTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
                     </button>
                 ))}
             </div>
-            {selectedTab === "dashboard" && <DashboardTab />}
             {selectedTab === "reservas" && <ReservasTab />}
             {selectedTab === "salas" && <SalasTab />}
+            {/* {selectedTab === "dashboard" && <DashboardTab />} */}
         </VStack>
     );
 };

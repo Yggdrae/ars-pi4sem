@@ -1,10 +1,24 @@
 export interface IReserva {
   id: number;
-  status: string;
-  motivoCancelamento: string;
-  usuarioId: number;
-  salaId: number;
+  usuario: {
+    id: number;
+    nome: string;
+    email: string;
+    senha: string;
+    criadoEm: string;
+    tipo: string;
+  };
+  sala: {
+    id: number;
+    endereco: null;
+    numero: number;
+    andar: number;
+    capacidade: number;
+    valorHora: string;
+    isDestaque: false;
+  };
   diaHoraInicio: string;
   diaHoraFim: string;
-  sala?: ISala;
+  status: string;
+  motivoCancelamento: null;
 }

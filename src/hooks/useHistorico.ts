@@ -11,7 +11,17 @@ export function useHistorico() {
     return response.data;
   }, []);
 
+  const getHistoricoByUser = useCallback(async (id: number) => {
+    const response = await api({
+      url: `http://localhost:3333/reservas/usuario/${id}`,
+      method: "GET",
+    });
+
+    return response.data;
+  }, []);
+
   return {
     getHistorico,
+    getHistoricoByUser,
   };
 }
