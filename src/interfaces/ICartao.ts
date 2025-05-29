@@ -1,9 +1,22 @@
 export interface ICartao {
   id: number;
-  numeroCriptografado: string;
-  nomeCriptografado: string;
-  validadeCriptografada: string;
-  cvvCriptografado: string;
+  ultimosDigitos: string;
+  validade: string;
+  bandeira: string;
+  token: string;
   favorito: boolean;
   criadoEm: string;
+}
+
+export interface IPostResponse {
+    id: number,
+    usuario: {
+        id: number
+    },
+    ultimosDigitos: string,
+    validade: string,
+    bandeira: "VISA" | "ELO" | "MASTERCARD",
+    token: string,
+    favorito: boolean,
+    criadoEm: string
 }

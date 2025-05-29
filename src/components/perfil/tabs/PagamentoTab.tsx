@@ -6,20 +6,31 @@ import { HStack } from "@/components/HStack";
 import { Text } from "@/components/Text";
 import { VStack } from "@/components/VStack";
 import { MeioPagamento } from "./MeioPagamento";
-import { ICartao } from "@/interfaces/ICartao";
+import { ICartao, IPostResponse } from "@/interfaces/ICartao";
 import { useCartao } from "@/hooks/useCartao";
 import { useAuth } from "@/context/authContext";
 import { useToast } from "@/context/ToastContext";
 import { Modal } from "@/components/Modal";
 import { InputText } from "@/components/InputText";
+import { useForm } from "@/hooks/useForms";
+
+interface IForm {
+  numero: string;
+  nomeTitular: string;
+  validade: string;
+  cvv: string;
+  bandeira: string;
+  usuarioId: number;
+}
 
 export const PagamentoTab = () => {
   const { userData } = useAuth();
   const { showToast } = useToast();
-  const { getCartoes, deleteCartao } = useCartao();
+  const { getCartoes, deleteCartao, adicionarCartao } = useCartao();
 
   const [meiosPagamento, setMeiosPagamento] = useState<ICartao[]>([]);
   const [modalVisivel, setModalVisivel] = useState<boolean>(false);
+  const [sending, setSending] = useState<boolean>(false);
 
   const [numero, setNumero] = useState("");
   const [validade, setValidade] = useState("");
@@ -34,11 +45,30 @@ export const PagamentoTab = () => {
     setMeiosPagamento(updated);
   };
 
-  const detectarBandeira = (numero: string) => {
+  const detectarBandeira = (
+    numero: string
+  ): "VISA" | "MASTERCARD" | "ELO" | "" => {
     const n = numero.replace(/\D/g, "");
-    if (/^4[0-9]{0,}$/.test(n)) return "VISA";
-    if (/^(5[1-5]|2[2-7])[0-9]{0,}$/.test(n)) return "MASTERCARD";
-    if (/^3[47][0-9]{0,}$/.test(n)) return "AMEX";
+
+    if (n.length !== 16) return "";
+
+    if (
+      /^(4011(78|79)|4312(74|75)|4389(35|36)|4514(16|17)|4576(31|32)|5041(75|76)|5067(01|02)|5090(41|42)|6277(80|81)|6362(97|98)|6363(68|69))[0-9]{10}$/.test(
+        n
+      )
+    ) {
+      return "ELO";
+    }
+
+    if (/^4[0-9]{15}$/.test(n)) return "VISA";
+
+    if (
+      /^5[1-5][0-9]{14}$/.test(n) ||
+      /^2(2[2-9][0-9]{12}|[3-6][0-9]{13}|7([01][0-9]{12}|20[0-9]{12}))$/.test(n)
+    ) {
+      return "MASTERCARD";
+    }
+
     return "";
   };
 
@@ -49,26 +79,34 @@ export const PagamentoTab = () => {
       return;
     }
 
-    // Simular envio
-    showToast("Cartão adicionado com sucesso!", "success");
-    setMeiosPagamento((prev) => [
-      ...prev,
-      {
-        id: Math.random(), // simulado
-        numeroCriptografado: numero.slice(-4),
-        nomeCriptografado: nome,
-        validadeCriptografada: validade,
-        cvvCriptografado: "•••",
-        favorito: false,
-        criadoEm: new Date().toISOString(),
-      },
-    ]);
-    setModalVisivel(false);
-    setNumero("");
-    setValidade("");
-    setCvv("");
-    setNome("");
-    setBandeira("");
+    setSending(true);
+
+    setTimeout(() => {
+      adicionarCartao({
+        numero,
+        nomeTitular: nome,
+        validade,
+        cvv,
+        bandeira: novaBandeira,
+        usuarioId: userData!.id,
+      })
+        .then((data: IPostResponse) => {
+          setMeiosPagamento([...meiosPagamento, data]);
+
+          showToast("Cartão adicionado com sucesso!", "success");
+          setModalVisivel(false);
+          setNumero("");
+          setValidade("");
+          setCvv("");
+          setNome("");
+          setBandeira("");
+          setSending(false);
+        })
+        .catch((err) => {
+          showToast("Ocorreu um erro ao adicionar o cartão.", "error");
+          setSending(false);
+        });
+    }, 1500);
   };
 
   useEffect(() => {
@@ -104,7 +142,11 @@ export const PagamentoTab = () => {
               variant="secondary"
               onClick={() => setModalVisivel(false)}
             />
-            <Button title="Salvar" onClick={handleAdicionarCartao} />
+            <Button
+              title="Salvar"
+              onClick={handleAdicionarCartao}
+              loading={sending}
+            />
           </>
         }
       >
@@ -114,8 +156,14 @@ export const PagamentoTab = () => {
             label="Número do Cartão"
             value={numero}
             onChange={(e) => {
-              setNumero(e.target.value);
-              setBandeira(detectarBandeira(e.target.value));
+              const raw = e.target.value.replace(/\D/g, "");
+
+              if (raw.length > 16) return;
+
+              const formatted = raw.replace(/(.{4})/g, "$1 ").trim();
+
+              setNumero(formatted);
+              setBandeira(detectarBandeira(raw));
             }}
             placeholder="Digite os números do cartão"
           />
@@ -152,10 +200,9 @@ export const PagamentoTab = () => {
         <MeioPagamento
           key={pagamento.id}
           pagamento={{
-            bandeiraCartao: "VISA", // ou usar `bandeira` se vier do back
-            nomeCartao: pagamento.nomeCriptografado,
-            numeroCartao: pagamento.numeroCriptografado,
-            validadeCartao: pagamento.validadeCriptografada,
+            bandeiraCartao: pagamento.bandeira,
+            numeroCartao: pagamento.ultimosDigitos,
+            validadeCartao: pagamento.validade,
             padrao: pagamento.favorito,
           }}
           onDefinirPadrao={() => {}}

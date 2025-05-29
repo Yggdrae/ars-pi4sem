@@ -3,25 +3,33 @@ import api from "../../services/api";
 
 export function useCartao() {
   const getCartoes = useCallback(async (id: number) => {
-    const response = await api({
-      url: `http://localhost:3333/cartoes/usuario/${id}`,
-      method: "GET",
-    });
-
+    const response = await api.get(`/cartoes/usuario/${id}`);
     return response.data;
   }, []);
 
-  const deleteCartao = useCallback(async (id: number) => {
-    const response = await api({
-      url: `http://localhost:3333/cartoes/${id}`,
-      method: "DELETE",
-    });
+  const adicionarCartao = useCallback(
+    async (cartao: {
+      numero: string;
+      nomeTitular: string;
+      validade: string;
+      cvv: string;
+      bandeira: string;
+      usuarioId: number;
+    }) => {
+      const response = await api.post(`/cartoes`, cartao);
+      return response.data;
+    },
+    []
+  );
 
+  const deleteCartao = useCallback(async (id: number) => {
+    const response = await api.delete(`/cartoes/${id}`);
     return response.data;
   }, []);
 
   return {
     getCartoes,
+    adicionarCartao,
     deleteCartao,
   };
 }
