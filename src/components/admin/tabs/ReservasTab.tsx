@@ -99,10 +99,12 @@ export const ReservasTab = () => {
     {
       label: "Ver reserva",
       onClick: (row: any) => {
-        const reserva = reservas.map((reserva) => {
+        console.log(row);
+        const reserva = reservas.find((reserva) => {
           if (reserva.id === row.id) return reserva;
         });
-        setReservaSelecionada(reserva ? reserva[0] : undefined);
+        console.log(reserva)
+        setReservaSelecionada(reserva ? reserva : undefined);
       },
     },
   ];
