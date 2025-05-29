@@ -6,7 +6,7 @@ import { useState } from "react";
 
 export default function Perfil() {
     const {userData} = useAuth();
-    const [selectedTab, setSelectedTab] = useState<string>("dashboard");
+    const [selectedTab, setSelectedTab] = useState<string>("reservas");
     const splittedName: string[] = userData?.nome?.split(" ") || [];
     const initials: string = userData?.nome ? splittedName[0][0] + splittedName[splittedName.length - 1][0] : "";
 
