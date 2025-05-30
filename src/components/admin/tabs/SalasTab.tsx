@@ -1,55 +1,142 @@
 import { VStack } from "@/components/VStack";
 import { useSalas } from "@/hooks/useSalas";
 import { FlexTable } from "@/components/FlexTable";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import RoomEditModal from "../RoomEditModal";
-
-interface ISalas {
-  id: number;
-  numero: number;
-  andar: number;
-  valorHora: number;
-  isDestaque: boolean;
-  botao: React.ReactElement
-}
-
-interface IColunas {
-  header: string;
-  accessor: keyof ISalas;
-}
+import RoomHorariosModal from "@/components/RoomHorariosModal";
+import { Modal } from "@/components/Modal";
+import { Text } from "@/components/Text";
+import Button from "@/components/Button";
+import { HStack } from "@/components/HStack";
+import { FaExclamationTriangle } from "react-icons/fa";
+import { useToast } from "@/context/ToastContext";
 
 export const SalasTab = () => {
-  const colunas: IColunas[] = [
-    {
-      header: "Número",
-      accessor: "numero"
-    },
-    {
-      header: "Andar",
-      accessor: "andar"
-    },
-    {
-      header: "Valor",
-      accessor: "valorHora"
-    },
-  ]
-  
-  const actions = [
-    { label: "Editar", onClick: (row: any) =>  setSalaId(row.id) },
-    { label: "Excluir", onClick: (row: any) => alert(`Excluindo ${row.id}`), className: "bg-red-500 text-white" },
+  const { showToast } = useToast();
+  const { getSalas, deleteSala } = useSalas();
+  const [salas, setSalas] = useState<ISala[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [salaId, setSalaId] = useState<number | null>(null);
+  const [confirmationRequired, setConfirmationRequired] = useState(false);
+  const [tipoModal, setTipoModal] = useState<"editar" | "horarios" | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetch = async () => {
+      const data = await getSalas();
+      setSalas(data);
+    };
+    fetch();
+  }, [getSalas]);
+
+  const colunas: { header: string; accessor: keyof ISala }[] = [
+    { header: "Número", accessor: "numero" },
+    { header: "Andar", accessor: "andar" },
+    { header: "Valor", accessor: "valorHora" },
   ];
 
-  const [salaId, setSalaId] = useState(0)
+  const actions = [
+    {
+      label: "Editar Detalhes",
+      onClick: (row: ISala) => {
+        setSalaId(row.id);
+        setTipoModal("editar");
+      },
+    },
+    {
+      label: "Editar Horários",
+      onClick: (row: ISala) => {
+        setSalaId(row.id);
+        setTipoModal("horarios");
+      },
+    },
+    {
+      label: "Excluir",
+      onClick: (row: ISala) => {
+        setConfirmationRequired(true);
+        setSalaId(row.id);
+      },
+      className: "bg-red-500 text-white",
+    },
+  ];
 
-  const [salas, setSalas] = useState([])
-  useSalas().getSalas().then((data) => {
-    setSalas(data);
-  })
+  const handleDelete = async (id: number) => {
+    setIsLoading(true);
+
+    setTimeout(async () => {
+      await deleteSala(id)
+        .then(async () => {
+          const updated = await getSalas();
+          setSalas(updated);
+          showToast("Sala excluida com sucesso!", "success");
+        })
+        .catch(() => {
+          showToast("Erro ao excluir sala.", "error");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }, 2000);
+  };
 
   return (
     <VStack className="gap-8 mt-6">
-      <FlexTable data={salas} columns={colunas} actions={actions} />
-      <RoomEditModal roomId={salaId} isOpen={salaId !== 0} onClose={() => setSalaId(0)}/>
+      <FlexTable
+        data={salas.sort((a, b) => a.numero - b.numero)}
+        columns={colunas}
+        actions={actions}
+      />
+      {salaId && tipoModal === "editar" && (
+        <RoomEditModal
+          salaId={salaId}
+          onClose={async () => {
+            setSalaId(null);
+            const updated = await getSalas(); // recarrega a lista
+            setSalas(updated);
+          }}
+        />
+      )}
+      {salaId && tipoModal === "horarios" && (
+        <RoomHorariosModal
+          salaId={salaId}
+          onClose={async () => {
+            setSalaId(null);
+            const updated = await getSalas(); // recarrega a lista
+            setSalas(updated);
+          }}
+        />
+      )}
+      {salaId && confirmationRequired && (
+        <Modal
+          title="Confirmar exclusão"
+          isOpen={confirmationRequired}
+          onClose={() => setConfirmationRequired(false)}
+          footer={
+            <HStack gap={4}>
+              <Button
+                title="Cancelar"
+                className="bg-red-700 text-white hover:bg-red-600"
+                disabled={isLoading}
+                onClick={() => {
+                  setConfirmationRequired(false);
+                  setSalaId(null);
+                }}
+              />
+              <Button
+                title="Confirmar"
+                onClick={() => handleDelete(salaId)}
+                loading={isLoading}
+              />
+            </HStack>
+          }
+        >
+          <HStack className="gap-2 items-center">
+            <FaExclamationTriangle color="orange" />
+            <Text>Tem certeza que deseja excluir essa sala?</Text>
+          </HStack>
+        </Modal>
+      )}
     </VStack>
   );
 };

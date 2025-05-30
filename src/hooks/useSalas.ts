@@ -3,45 +3,91 @@ import api from "../../services/api";
 
 export function useSalas() {
   const getSalas = useCallback(async () => {
-    const response = await api({
-      url: `http://localhost:3333/salas`,
-      method: "GET",
-    });
-
-    return response.data;
+    const { data } = await api.get("/salas");
+    return data;
   }, []);
 
   const getSalasFull = useCallback(async () => {
-    const response = await api({
-      url: `http://localhost:3333/salas/full`,
-      method: "GET",
-    });
-
-    return response.data;
+    const { data } = await api.get("/salas/full");
+    return data;
   }, []);
 
   const getSalaById = useCallback(async (id: number) => {
-    const response = await api({
-      url: `http://localhost:3333/salas/${id}`,
-      method: "GET",
-    });
+    const { data } = await api.get(`/salas/${id}`);
+    return data;
+  }, []);
 
-    return response;
+  const getSalaFullById = useCallback(async (id: number) => {
+    const { data } = await api.get(`/salas/full/${id}`);
+    return data;
   }, []);
 
   const getDestaques = useCallback(async () => {
-    const response = await api({
-      url: `http://localhost:3333/salas/destaques`,
-      method: "GET",
-    });
+    const { data } = await api.get("/salas/destaques");
+    return data;
+  }, []);
 
-    return response.data;
+  const updateSala = useCallback(
+    async (
+      id: number,
+      input: {
+        numero: string;
+        andar: string;
+        valorHora: string;
+      }
+    ) => {
+      const { data } = await api.put(`/salas/${id}`, input);
+      return data;
+    },
+    []
+  );
+
+  const removeImagem = useCallback(async (id: number) => {
+    const { data } = await api.delete(`/salas_imagens/${id}`);
+    return data;
+  }, []);
+
+  const uploadImagem = useCallback(
+    async (input: { salaId: number; imagem: File }) => {
+      const { data } = await api.post("/salas_imagens", input);
+      return data;
+    },
+    []
+  );
+
+  const removeRecursoSala = useCallback(async (id: number) => {
+    const { data } = await api.delete(`/salas_recursos/${id}`);
+    return data;
+  }, []);
+
+  const addRecursoSala = useCallback(
+    async (input: { sala: number; recurso: number; quantidade: number }) => {
+      const { data } = await api.post("/salas_recursos", input);
+      return data;
+    },
+    []
+  );
+
+  const deleteSala = useCallback(async (id: number) => {
+    try {
+      const { data } = await api.delete(`/salas/${id}`);
+      return data;
+    } catch (err) {
+      console.log(err);
+    }
   }, []);
 
   return {
     getSalas,
     getSalasFull,
     getSalaById,
+    getSalaFullById,
     getDestaques,
+    updateSala,
+    removeImagem,
+    uploadImagem,
+    removeRecursoSala,
+    addRecursoSala,
+    deleteSala,
   };
 }
