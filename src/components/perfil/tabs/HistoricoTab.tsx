@@ -8,6 +8,9 @@ import { Modal } from "@/components/Modal";
 import { Text } from "@/components/Text";
 import { InputText } from "@/components/InputText";
 import Button from "@/components/Button";
+import { FaBan, FaEye } from "react-icons/fa";
+import { HStack } from "@/components/HStack";
+import { useToast } from "@/context/ToastContext";
 
 interface IHistorico {
   id: number;
@@ -33,7 +36,9 @@ const colunas: IColunas[] = [
 
 export const HistoricoTab = () => {
   const { userData } = useAuth();
-  const { getHistoricoByUser } = useHistorico();
+  const { showToast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const { getHistoricoByUser, cancelarReserva } = useHistorico();
   const [historico, setHistorico] = useState<IHistorico[]>([]);
   const [reservas, setReservas] = useState<IReserva[]>([]);
   const [reservaSelecionada, setReservaSelecionada] = useState<
@@ -66,12 +71,12 @@ export const HistoricoTab = () => {
           sala: `Sala ${item.sala.numero} (Andar ${item.sala.andar})`,
           status: item.status,
           valor: `R$${(
-            Number(item.sala.valorHora) *
+            Number(item.valorHoraNaReserva) *
             ((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60 * 60))
           ).toFixed(2)}`,
         };
       });
-      setHistorico(formatado);
+      setHistorico(formatado.sort((a, b) => b.id - a.id));
     };
 
     fetchHistorico();
@@ -79,7 +84,11 @@ export const HistoricoTab = () => {
 
   const actions = [
     {
-      label: "Ver reserva",
+      label: (
+        <HStack className="gap-1 items-center">
+          <FaEye /> Ver Reserva
+        </HStack>
+      ),
       onClick: (row: any) => {
         const reserva = reservas.map((reserva) => {
           if (reserva.id === row.id) return reserva;
@@ -89,7 +98,11 @@ export const HistoricoTab = () => {
       },
     },
     {
-      label: "Cancelar reserva",
+      label: (
+        <HStack className="gap-1 items-center">
+          <FaBan /> Cancelar Reserva
+        </HStack>
+      ),
       onClick: (row: any) => {
         const reserva = reservas.map((reserva) => {
           if (reserva.id === row.id) return reserva;
@@ -97,6 +110,7 @@ export const HistoricoTab = () => {
         setReservaSelecionada(reserva ? reserva[0] : undefined);
         setModalTipo("cancelar");
       },
+      className: "bg-red-500 text-white",
     },
   ];
 
@@ -104,6 +118,49 @@ export const HistoricoTab = () => {
     setModalTipo(null);
     setReservaSelecionada(undefined);
     setMotivo("");
+  };
+
+  const handleCancelamento = (reserva: IReserva) => {
+    setIsLoading(true);
+    setTimeout(async () => {
+      await cancelarReserva(reserva.id, motivo)
+        .then(async () => {
+          const data: IReserva[] = await getHistoricoByUser(userData!.id);
+          setReservas(data);
+          const formatado: IHistorico[] = data.map((item): IHistorico => {
+            const dataInicio = new Date(item.diaHoraInicio);
+            const dataFim = new Date(item.diaHoraFim);
+
+            const dataFormatada = dataInicio.toLocaleDateString("pt-BR");
+            const horarioFormatado = `${dataInicio.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })} - ${dataFim.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}`;
+
+            return {
+              id: item.id,
+              data: dataFormatada,
+              horario: horarioFormatado,
+              sala: `Sala ${item.sala.numero} (Andar ${item.sala.andar})`,
+              status: item.status,
+              valor: `R$${(
+                Number(item.valorHoraNaReserva) *
+                ((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60 * 60))
+              ).toFixed(2)}`,
+            };
+          });
+          setHistorico(formatado.sort((a, b) => b.id - a.id));
+          closeModal();
+          showToast("Reserva cancelada com sucesso!", "success");
+        })
+        .catch((e) => {
+          showToast("Erro ao cancelar reserva", "error");
+        })
+        .finally(() => setIsLoading(false));
+    }, 2000);
   };
 
   return (
@@ -121,17 +178,12 @@ export const HistoricoTab = () => {
                 title="Cancelar"
                 variant="secondary"
                 onClick={closeModal}
+                disabled={isLoading}
               />
               <Button
                 title="Cancelar Reserva"
-                onClick={() => {
-                  console.log(
-                    "Solicitado cancelamento da reserva",
-                    reservaSelecionada?.id,
-                    motivo
-                  );
-                  closeModal();
-                }}
+                onClick={() => handleCancelamento(reservaSelecionada!)}
+                loading={isLoading}
               />
             </>
           ) : (
