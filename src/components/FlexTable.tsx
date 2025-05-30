@@ -7,7 +7,7 @@ interface FlexTableProps<T> {
     accessor: keyof T;
   }[];
   actions?: {
-    label: string;
+    label: React.ReactNode;
     onClick: (row: T) => void;
     className?: string;
   }[];
@@ -32,31 +32,39 @@ export function FlexTable<T>({ data, columns, actions, itemsPerPage = 5 }: FlexT
         <thead>
           <tr className="bg-[#1E1E1E] text-content-primary">
             {columns.map((col) => (
-              <th key={String(col.accessor)} className="p-3 border-b border-[#444] text-left">
+              <th
+                key={String(col.accessor)}
+                className="p-3 border-b border-[#444] text-center align-middle"
+              >
                 {col.header}
               </th>
             ))}
-            {actions && <th className="p-3 border-b border-[#444] text-left">Ações</th>}
+            {actions && (
+              <th className="p-3 border-b border-[#444] text-center align-middle">Ações</th>
+            )}
           </tr>
         </thead>
         <tbody>
           {paginatedData.map((row, rowIndex) => (
             <tr key={rowIndex} className="text-content-ternary hover:bg-[#2A2A2A] transition">
               {columns.map((col) => (
-                <td key={String(col.accessor)} className="p-3 border-b border-[#444]">
-                  <div className="flex justify-between items-center w-full">
-                    {String(row[col.accessor])}
-                  </div>
+                <td
+                  key={String(col.accessor)}
+                  className="p-3 border-b border-[#444] text-center align-middle"
+                >
+                  {String(row[col.accessor])}
                 </td>
               ))}
               {actions && (
-                <td className="p-3 border-b border-[#444]">
-                  <div className="flex items-center gap-2">
+                <td className="p-3 border-b border-[#444] text-center align-middle">
+                  <div className="flex justify-center items-center gap-2">
                     {actions.map((action, index) => (
                       <button
                         key={index}
                         onClick={() => action.onClick(row)}
-                        className={`px-3 py-1 rounded-md cursor-pointer transition-colors text-sm ${action.className || 'bg-[#E5D3B3] text-[#1E1E1E] hover:bg-[#d8c6a6]'}`}
+                        className={`px-3 py-1 rounded-md cursor-pointer transition-colors text-sm ${
+                          action.className || 'bg-[#E5D3B3] text-[#1E1E1E] hover:bg-[#d8c6a6]'
+                        }`}
                       >
                         {action.label}
                       </button>
@@ -84,7 +92,9 @@ export function FlexTable<T>({ data, columns, actions, itemsPerPage = 5 }: FlexT
               key={index}
               onClick={() => goToPage(index + 1)}
               className={`px-3 py-1 border rounded ${
-                page === index + 1 ? 'bg-[#E5D3B3] text-[#1E1E1E]' : 'bg-[#1E1E1E] text-[#E5D3B3] hover:bg-[#333]'
+                page === index + 1
+                  ? 'bg-[#E5D3B3] text-[#1E1E1E]'
+                  : 'bg-[#1E1E1E] text-[#E5D3B3] hover:bg-[#333]'
               }`}
             >
               {index + 1}
