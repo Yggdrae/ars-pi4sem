@@ -83,7 +83,7 @@ export const ReservasTab = () => {
           sala: `Sala ${item.sala.numero} (Andar ${item.sala.andar})`,
           status: item.status,
           valor: `R$${
-            Number(item.sala.valorHora) *
+            Number(item.valorHoraNaReserva) *
             ((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60 * 60))
           }`,
         };

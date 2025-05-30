@@ -102,7 +102,7 @@ export const SalasTab = () => {
           salaId={salaId}
           onClose={async () => {
             setSalaId(null);
-            const updated = await getSalas(); // recarrega a lista
+            const updated = await getSalas();
             setSalas(updated);
           }}
         />

@@ -10,6 +10,7 @@ import { useHorarios } from "@/hooks/useHorarios";
 import { IHorario } from "@/interfaces/IHorario";
 import { Spinner } from "./Spinner";
 import Button from "./Button";
+import { getRecursoIcon } from "@/utils/recursosIcons";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -33,7 +34,7 @@ export default function RoomDetailsModal({
   });
   const [showPaymentScreen, setShowPaymentScreen] = useState(false);
   const [loadingPixMethod, setLoadingPixMethod] = useState(false);
-  const [qrCode, setQrCode] = useState<string | null>(null);  
+  const [qrCode, setQrCode] = useState<string | null>(null);
 
   useEffect(() => {
     setRange(null);
@@ -117,8 +118,9 @@ export default function RoomDetailsModal({
 
         <div className="flex w-full h-full transition-all duration-500 ease-in-out">
           <div
-            className={`w-full transition-transform duration-500 ease-in-out ${showPaymentScreen ? "-translate-x-500 absolute" : "relative"
-              }`}
+            className={`w-full transition-transform duration-500 ease-in-out ${
+              showPaymentScreen ? "-translate-x-500 absolute" : "relative"
+            }`}
           >
             <VStack className="gap-6">
               <div className="flex flex-col md:flex-row gap-4">
@@ -140,8 +142,9 @@ export default function RoomDetailsModal({
                       room.salasRecursos.map((resource, index) => (
                         <HStack
                           key={index}
-                          className="px-3 py-1 bg-[#2a2a2a] text-sm rounded-lg items-center gap-1"
+                          className="px-3 py-1 bg-[#2a2a2a] text-content-ternary text-sm rounded-lg items-center gap-1"
                         >
+                          {getRecursoIcon(resource.recurso.nome)}
                           <Text className="text-content-ternary">
                             {resource.recurso.nome}
                           </Text>
@@ -180,10 +183,11 @@ export default function RoomDetailsModal({
                         <button
                           key={time}
                           onClick={() => onSlotClick(time)}
-                          className={`py-2 rounded-lg text-sm focus:outline-none transition-colors cursor-pointer ${selected
-                            ? "bg-content-primary text-gray-900"
-                            : "bg-[#2a2a2a] text-gray-200 hover:bg-[#3a3a3a]"
-                            }`}
+                          className={`py-2 rounded-lg text-sm focus:outline-none transition-colors cursor-pointer ${
+                            selected
+                              ? "bg-content-primary text-gray-900"
+                              : "bg-[#2a2a2a] text-gray-200 hover:bg-[#3a3a3a]"
+                          }`}
                         >
                           {time}
                         </button>
@@ -215,16 +219,20 @@ export default function RoomDetailsModal({
           </div>
 
           <div
-            className={`w-full transition-transform duration-500 ease-in-out ${showPaymentScreen
-              ? "translate-x-0 relative"
-              : "translate-x-full absolute"
-              }`}
+            className={`w-full transition-transform duration-500 ease-in-out ${
+              showPaymentScreen
+                ? "translate-x-0 relative"
+                : "translate-x-full absolute"
+            }`}
           >
-            <Button title="Voltar" onClick={() => {
-              setShowPaymentScreen(false);
-              setQrCode(null);
-              setLoadingPixMethod(false);
-            }} />
+            <Button
+              title="Voltar"
+              onClick={() => {
+                setShowPaymentScreen(false);
+                setQrCode(null);
+                setLoadingPixMethod(false);
+              }}
+            />
             <VStack className="gap-4">
               <Text className="text-2xl text-center text-content-primary font-bold mb-4">
                 Escolha o método de pagamento
@@ -244,7 +252,11 @@ export default function RoomDetailsModal({
                 />
               )}
               {qrCode && (
-                <img src={qrCode} alt="QR Code" className="w-64 h-64 self-center" />
+                <img
+                  src={qrCode}
+                  alt="QR Code"
+                  className="w-64 h-64 self-center"
+                />
               )}
             </VStack>
           </div>

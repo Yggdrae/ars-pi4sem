@@ -13,6 +13,7 @@ import { useToast } from "@/context/ToastContext";
 import { Modal } from "@/components/Modal";
 import { InputText } from "@/components/InputText";
 import { useForm } from "@/hooks/useForms";
+import { FaPlus } from "react-icons/fa";
 
 interface IForm {
   numero: string;
@@ -128,6 +129,7 @@ export const PagamentoTab = () => {
           variant="primary"
           className="w-fit"
           onClick={() => setModalVisivel(true)}
+          leftIcon={<FaPlus />}
         />
       </HStack>
 

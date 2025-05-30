@@ -1,3 +1,16 @@
+import {
+  FaHome,
+  FaUser,
+  FaUserCircle,
+  FaTools,
+  FaSignOutAlt,
+  FaSignInAlt,
+  FaUserPlus,
+  FaLock,
+  FaEdit,
+  FaTimes,
+  FaSave,
+} from "react-icons/fa";
 import Button from "@/components/Button";
 import { HStack } from "@/components/HStack";
 import { InputText } from "@/components/InputText";
@@ -138,7 +151,11 @@ export const DadosTab = () => {
               variant="secondary"
               onClick={() => setModalVisivel(false)}
             />
-            <Button title="Salvar" onClick={() => handleSavePass()} loading={loadingPass} />
+            <Button
+              title="Salvar"
+              onClick={() => handleSavePass()}
+              loading={loadingPass}
+            />
           </>
         }
       >
@@ -175,15 +192,19 @@ export const DadosTab = () => {
       </Modal>
 
       <HStack className="justify-between items-center">
-        <Text className="text-lg font-semibold text-content-primary">
-          Dados Pessoais
-        </Text>
+        <HStack className="items-center" gap={2}>
+          <FaUserCircle className="text-2xl text-content-primary" />
+          <Text className="text-lg font-semibold text-content-primary">
+            Dados Pessoais
+          </Text>
+        </HStack>
         {!editView ? (
           <Button
             title="Editar"
             variant="secondary"
             className="w-fit"
             onClick={() => setEditView(true)}
+            leftIcon={<FaEdit />}
           />
         ) : (
           <HStack className="gap-2">
@@ -192,6 +213,7 @@ export const DadosTab = () => {
               variant="primary"
               className="w-fit bg-error-500 hover:bg-error-800"
               onClick={() => setEditView(false)}
+              leftIcon={<FaTimes />}
             />
             <Button
               title="Salvar"
@@ -199,6 +221,7 @@ export const DadosTab = () => {
               className="w-fit"
               loading={isLoading}
               onClick={() => handleSaveInfo()}
+              leftIcon={<FaSave />}
             />
           </HStack>
         )}
@@ -236,9 +259,12 @@ export const DadosTab = () => {
       </div>
 
       <VStack className="mt-8 gap-4">
-        <Text className="text-lg font-semibold text-content-primary">
-          Segurança
-        </Text>
+        <HStack className="items-center" gap={2}>
+          <FaLock className="text-2xl text-content-primary" />
+          <Text className="text-lg font-semibold text-content-primary">
+            Segurança
+          </Text>
+        </HStack>
         <Button
           title="Alterar Senha"
           variant="secondary"

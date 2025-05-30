@@ -4,6 +4,7 @@ import Button from "./Button";
 import { VStack } from "./VStack";
 import { HStack } from "./HStack";
 import { Text } from "./Text";
+import { getRecursoIcon } from "@/utils/recursosIcons";
 
 interface DestaqueCardProps {
   backgroundImage: string | StaticImageData;
@@ -80,6 +81,7 @@ export const SalaCard = ({
                   key={index}
                   className="px-3 py-1 bg-content-secondary text-sm rounded-lg items-center gap-1"
                 >
+                  {getRecursoIcon(resource.nome)}
                   <Text>{resource.nome}</Text>
                 </HStack>
               );
