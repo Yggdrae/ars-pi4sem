@@ -21,4 +21,5 @@ export interface IReserva {
   diaHoraFim: string;
   status: string;
   motivoCancelamento: null;
+  valorHoraNaReserva: number;
 }

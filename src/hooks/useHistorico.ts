@@ -20,8 +20,14 @@ export function useHistorico() {
     return response.data;
   }, []);
 
+  const cancelarReserva = useCallback(async (id: number, motivo: string) => {
+    const { data } = await api.put(`/reservas/cancelar/${id}`, motivo);
+    return data;
+  }, []);
+
   return {
     getHistorico,
     getHistoricoByUser,
+    cancelarReserva,
   };
 }
