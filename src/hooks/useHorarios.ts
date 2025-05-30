@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import api from "../../services/api";
+import { IHorarioPayload } from "@/interfaces/IHorario";
 
 export function useHorarios() {
   const getHorariosBySala = useCallback(async (id: number, data: any) => {
@@ -11,7 +12,13 @@ export function useHorarios() {
     return response.data;
   }, []);
 
+  const updateHorariosSala = useCallback(async (payload: IHorarioPayload[]) => {
+    const response = await api.put(`/disponibilidadeSalas`, payload);
+    return response.data;
+  }, []);
+
   return {
     getHorariosBySala,
+    updateHorariosSala,
   };
 }
