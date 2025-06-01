@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { Text } from "./Text";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa"
 
 interface SalaImagem {
   imagem: {
@@ -58,13 +59,13 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
               onClick={goPrev}
               className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white px-2 py-1 rounded-full"
             >
-              <Text>{"<"}</Text>
+              <FaAngleLeft color="white" />
             </button>
             <button
               onClick={goNext}
               className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white px-2 py-1 rounded-full"
             >
-              <Text>{">"}</Text>
+              <FaAngleRight color="white" />
             </button>
           </>
         )}
@@ -80,7 +81,7 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
               onClick={() => scrollThumbnails("left")}
               className="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-black/60 via-black/30 to-transparent"
             >
-              ⟵
+              <FaAngleLeft color="white" />
             </button>
 
             {/* Thumbnails scrolláveis com limite máximo de largura */}
@@ -95,11 +96,10 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
                   <div
                     key={i}
                     onClick={() => setSelected(i)}
-                    className={`flex-shrink-0 cursor-pointer border-2 rounded-lg transition-all ${
-                      selected === i
+                    className={`flex-shrink-0 cursor-pointer border-2 rounded-lg transition-all ${selected === i
                         ? "border-content-primary scale-105"
                         : "border-transparent"
-                    }`}
+                      }`}
                   >
                     <div className="w-[100px] h-[60px] relative rounded-lg overflow-hidden">
                       <Image
@@ -119,7 +119,7 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
               onClick={() => scrollThumbnails("right")}
               className="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-black/60 via-black/30 to-transparent"
             >
-              ⟶
+              <FaAngleRight color="white" />
             </button>
           </div>
         </div>
