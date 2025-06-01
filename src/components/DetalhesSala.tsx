@@ -425,7 +425,7 @@ export default function RoomDetailsModal({
                             <>
                               {!inserirNovoCartao ? (
                                 <VStack className="gap-3 w-full">
-                                  {cartoesSalvos.map((cartao) => (
+                                  {cartoesSalvos.length > 0 && cartoesSalvos.map((cartao) => (
                                     <div
                                       key={cartao.id}
                                       onClick={() => setCartaoSelecionado(cartao)}
@@ -443,6 +443,11 @@ export default function RoomDetailsModal({
                                       </Text>
                                     </div>
                                   ))}
+                                  <Card className="w-full p-2 rounded-lg border border-[#333] bg-[#1E1E1E]">
+                                    <Text className="text-content-primary text-lg font-semibold">
+                                      Você não possui cartões salvos.
+                                    </Text>
+                                  </Card>
                                   <button
                                     className="mt-2 text-sm text-content-primary underline"
                                     onClick={() => {
