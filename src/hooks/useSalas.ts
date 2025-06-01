@@ -73,12 +73,8 @@ export function useSalas() {
   );
 
   const deleteSala = useCallback(async (id: number) => {
-    try {
-      const { data } = await api.delete(`/salas/${id}`);
-      return data;
-    } catch (err) {
-      console.log(err);
-    }
+    const { data } = await api.delete(`/salas/${id}`);
+    return data;
   }, []);
 
   return {

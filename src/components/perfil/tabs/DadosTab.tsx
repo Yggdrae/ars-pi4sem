@@ -37,7 +37,6 @@ export const DadosTab = () => {
     onSuccess: () => {
       window.location.reload();
     },
-    onError: (err) => console.log("Erro!", err),
   });
   const [editView, setEditView] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);

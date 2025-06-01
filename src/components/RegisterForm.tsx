@@ -20,7 +20,6 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
   const { submit, loading } = useForm<IForm>({
     endpoint: "/usuarios/create",
     method: "POST",
-    onError: (err) => console.log("Erro!", err),
   });
 
   const nomeRegex = /^[A-Za-zÀ-ÿ]+(?: [A-Za-zÀ-ÿ]+)+$/;

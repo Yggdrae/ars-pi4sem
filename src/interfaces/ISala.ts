@@ -14,6 +14,7 @@ interface ISala {
     quantidade: number;
   }[];
   salasImagens: {
+    id: number;
     imagem: {
       data: number[];
     }

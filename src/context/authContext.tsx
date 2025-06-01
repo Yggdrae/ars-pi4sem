@@ -49,13 +49,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       );
 
       if (response.data.authenticated) {
-        console.log(response.data.usuario);
         const userData = await axios.get(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/usuarios/${response.data.usuario.id}`,
           {
             withCredentials: true,
           })
-          console.log(userData)
         setUserData({
           id: response.data.usuario.id,
           nome: userData.data.nome,

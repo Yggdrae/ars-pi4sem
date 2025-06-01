@@ -90,7 +90,6 @@ export const HistoricoTab = () => {
         </HStack>
       ),
       onClick: (row: any) => {
-        console.log(row)
         const reserva = reservas.find((reserva) => {
           if (reserva.id === row.id) return reserva;
         });
