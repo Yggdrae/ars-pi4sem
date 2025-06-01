@@ -13,12 +13,12 @@ import { useSalas } from "@/hooks/useSalas";
 
 export default function Home() {
   const { getDestaques } = useSalas();
-  const [destaques, setDestaques] = useState<any>([]);
+  const [destaques, setDestaques] = useState<ISala[]>([]);
 
   useEffect(() => {
     const fetchDestaques = async () => {
       const destaques = await getDestaques();
-      setDestaques(destaques);
+      setDestaques(destaques.sort((a: ISala, b: ISala) => a.numero - b.numero));
     };
     fetchDestaques();
   })
@@ -72,11 +72,11 @@ export default function Home() {
           return (
             <DestaqueCard
               key={destaque.numero}
-              backgroundImage={require("@/assets/destaque1.png")}
+              backgroundImage={destaque.salasImagens.length > 0 ? destaque.salasImagens[0].imagemBase64 : require("@/assets/destaque1.png")}
               backgroundAlt={`Imagem da sala ${destaque.numero}`}
               className="w-full sm:w-[48%] lg:w-[30%]"
               title={`Sala ${destaque.numero}`}
-              badges={["TV", "Ar Condicionado", "Wifi"]}
+              badges={destaque.salasRecursos.map((item) => item.recurso.nome)}
               capacity={destaque.capacidade}
               hourValue={destaque.valorHora}
             />

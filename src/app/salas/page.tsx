@@ -19,8 +19,8 @@ export default function Salas() {
   useEffect(() => {
     const fetchSalas = async () => {
       const data = await getSalasFull();
-      setSalas(data);
-      setFilteredSalas(data);
+      setSalas(data.sort((a: ISala, b: ISala) => a.numero - b.numero));
+      setFilteredSalas(data.sort((a: ISala, b: ISala) => a.numero - b.numero));
     };
     fetchSalas();
   }, []);

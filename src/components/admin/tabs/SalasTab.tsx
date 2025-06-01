@@ -8,13 +8,15 @@ import { Modal } from "@/components/Modal";
 import { Text } from "@/components/Text";
 import Button from "@/components/Button";
 import { HStack } from "@/components/HStack";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import { useToast } from "@/context/ToastContext";
+import RoomCreateModal from "../RoomCreateModal";
 
 export const SalasTab = () => {
   const { showToast } = useToast();
   const { getSalas, deleteSala } = useSalas();
   const [salas, setSalas] = useState<ISala[]>([]);
+  const [creating, setCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [salaId, setSalaId] = useState<number | null>(null);
   const [confirmationRequired, setConfirmationRequired] = useState(false);
@@ -82,6 +84,7 @@ export const SalasTab = () => {
 
   return (
     <VStack className="gap-8 mt-6">
+      <Button title="Adicionar Sala" leftIcon={<FaPlus />} size="md" className="w-fit place-self-end" onClick={() => setCreating(true)} />
       <FlexTable
         data={salas.sort((a, b) => a.numero - b.numero)}
         columns={colunas}
@@ -136,6 +139,16 @@ export const SalasTab = () => {
             <Text>Tem certeza que deseja excluir essa sala?</Text>
           </HStack>
         </Modal>
+      )}
+      {creating && (
+        <RoomCreateModal
+          isOpen={creating}
+          onClose={async () => {
+            setCreating(false);
+            const updated = await getSalas();
+            setSalas(updated);
+          }}
+        />
       )}
     </VStack>
   );

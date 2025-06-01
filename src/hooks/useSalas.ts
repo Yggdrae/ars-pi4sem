@@ -2,6 +2,11 @@ import { useCallback } from "react";
 import api from "../../services/api";
 
 export function useSalas() {
+  const createSala = useCallback(async (input: { numero: string; andar: string; valorHora: string; capacidade: string }) => {
+    const { data } = await api.post("/salas", input);
+    return data;
+  }, []);
+
   const getSalas = useCallback(async () => {
     const { data } = await api.get("/salas");
     return data;
@@ -83,6 +88,7 @@ export function useSalas() {
   }, []);
 
   return {
+    createSala,
     getSalas,
     getSalasFull,
     getSalaById,
