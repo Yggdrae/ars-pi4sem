@@ -27,7 +27,7 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
   const { showToast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [sala, setSala] = useState<any>(null);
+  const [sala, setSala] = useState<ISala | null>(null);
   const [numero, setNumero] = useState("");
   const [andar, setAndar] = useState("");
   const [valorHora, setValorHora] = useState("");
@@ -45,7 +45,6 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
         setRecursos(data.salasRecursos);
       });
       getRecursos().then((data) => {
-        console.log(data);
         setTodosRecursos(data);
       });
     }
@@ -90,7 +89,7 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
         showToast("Recurso adicionado com sucesso!", "success");
       }, 500);
     } catch (r) {
-      console.log(r);
+      showToast("Erro ao adicionar recurso.", "error");
     }
   };
 
@@ -149,20 +148,20 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
             {sala &&
               sala.salasImagens.map((img: any, idx: number) => (
                 <div key={idx} className="relative group">
-                  {/* <Image
-                  src={`data:image/jpeg;base64,${btoa(
-                    String.fromCharCode(...img.imagem.data)
-                  )}`}
-                  width={100}
-                  height={100}
-                  alt="sala"
-                  className="rounded"
-                /> */}
+                  <Image
+                    src={`data:image/jpeg;base64,${btoa(
+                      String.fromCharCode(...img.imagem.data)
+                    )}`}
+                    width={100}
+                    height={100}
+                    alt="sala"
+                    className="rounded"
+                    onClick={() => console.log(img.id)}
+                  />
                   <button
                     className="absolute top-1 right-1 text-red-500 bg-black bg-opacity-50 rounded px-1 hidden group-hover:block"
                     onClick={() => {
-                      console.log(img);
-                      /* handleRemoverImagem(idx); */
+                      handleRemoverImagem(img.id);
                     }}
                   >
                     ×
@@ -180,7 +179,6 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
             {recursos.map((r) => (
               <div
                 key={r.id}
-                onClick={() => console.log(r)}
                 className="relative px-3 py-1 bg-gray-700 text-white rounded-full group cursor-pointer"
               >
                 {r.recurso.nome}
