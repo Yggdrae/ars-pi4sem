@@ -99,11 +99,9 @@ export const ReservasTab = () => {
     {
       label: "Ver reserva",
       onClick: (row: any) => {
-        console.log(row);
         const reserva = reservas.find((reserva) => {
           if (reserva.id === row.id) return reserva;
         });
-        console.log(reserva)
         setReservaSelecionada(reserva ? reserva : undefined);
       },
     },

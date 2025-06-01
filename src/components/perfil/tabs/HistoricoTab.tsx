@@ -90,10 +90,11 @@ export const HistoricoTab = () => {
         </HStack>
       ),
       onClick: (row: any) => {
-        const reserva = reservas.map((reserva) => {
+        console.log(row)
+        const reserva = reservas.find((reserva) => {
           if (reserva.id === row.id) return reserva;
         });
-        setReservaSelecionada(reserva ? reserva[0] : undefined);
+        setReservaSelecionada(reserva ? reserva : undefined);
         setModalTipo("ver");
       },
     },
@@ -104,13 +105,20 @@ export const HistoricoTab = () => {
         </HStack>
       ),
       onClick: (row: any) => {
-        const reserva = reservas.map((reserva) => {
+        const reserva = reservas.find((reserva) => {
           if (reserva.id === row.id) return reserva;
         });
-        setReservaSelecionada(reserva ? reserva[0] : undefined);
+        if (reserva && reserva!.status === "Cancelada") {
+          showToast(
+            "Reserva já foi cancelada",
+            "error",
+          );
+          return;
+        }
+        setReservaSelecionada(reserva ? reserva : undefined);
         setModalTipo("cancelar");
       },
-      className: "bg-red-500 text-white",
+      className: `bg-red-500 text-white`,
     },
   ];
 
@@ -218,6 +226,11 @@ export const HistoricoTab = () => {
             <Text>
               <strong>Status:</strong> {reservaSelecionada.status}
             </Text>
+            {reservaSelecionada.status === "Cancelada" && (
+              <Text>
+                <strong>Motivo Cancelamento:</strong> {reservaSelecionada.motivoCancelamento}
+              </Text>
+            )}
             {modalTipo === "cancelar" && (
               <InputText
                 id="motivo"
