@@ -124,7 +124,7 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
       isOpen={!!salaId}
       onClose={onClose}
       title={`Editar Sala ${numero}`}
-      className="max-w-7xl w-full"
+      className="xl:max-w-2xl 2xl:max-w-5xl xl:min-h-[70vh] 2xl:min-h-[50vh] "
     >
       <VStack className="gap-6 p-4 md:flex-row flex-col">
         <VStack className="flex-1 gap-4">
@@ -194,7 +194,7 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
         </VStack>
       </VStack>
 
-      <div className="mt-6">
+      <div className="mt-6 place-self-end">
         <Button title="Salvar alterações" onClick={handleSalvar} loading={isLoading} />
       </div>
     </Modal>
