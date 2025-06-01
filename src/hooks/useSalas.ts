@@ -49,7 +49,11 @@ export function useSalas() {
 
   const uploadImagem = useCallback(
     async (input: { salaId: number; imagem: File }) => {
-      const { data } = await api.post("/salas_imagens", input);
+      const { data } = await api.post("/salas_imagens", input, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return data;
     },
     []
