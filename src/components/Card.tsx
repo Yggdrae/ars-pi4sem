@@ -87,17 +87,6 @@ const Content = ({
     return <div className={c({ class: className })}>{children}</div>;
 };
 
-/**
- * O componente Card é uma representação visual de um contêiner retangular que agrupa informações relacionadas em uma aplicação React.
- *
- * ```tsx
- *  <Card {...props}>
- *    <Card.Header />
- *    <Card.Content />
- *    <Card.Footer />
- *  </Card>
- * ```
- */
 const Card = ({
     children,
     bg = "surface",
