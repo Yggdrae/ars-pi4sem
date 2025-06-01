@@ -4,22 +4,13 @@ import { Text } from "./Text";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa"
 
 interface SalaImagem {
-  imagem: {
-    data: number[];
-  };
-}
+  id: number;
+  imagemBase64: string;
+  ordem: number;
+};
 
 interface ImageCarouselProps {
   images: SalaImagem[];
-}
-
-function bufferArrayToBase64(data: number[]): string {
-  const uint8Array = new Uint8Array(data);
-  const binaryString = uint8Array.reduce(
-    (acc, byte) => acc + String.fromCharCode(byte),
-    ""
-  );
-  return "data:image/png;base64," + btoa(binaryString);
 }
 
 export default function ImageCarousel({ images }: ImageCarouselProps) {
@@ -28,7 +19,7 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
   if (!images || images.length === 0) return null;
 
   const total = images.length;
-  const mainSrc = bufferArrayToBase64(images[selected].imagem.data);
+  const mainSrc = images[selected].imagemBase64;
 
   const goPrev = () => setSelected((prev) => (prev - 1 + total) % total);
   const goNext = () => setSelected((prev) => (prev + 1) % total);
@@ -91,14 +82,14 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
               style={{ scrollBehavior: "smooth" }}
             >
               {images.map((img, i) => {
-                const thumbSrc = bufferArrayToBase64(img.imagem.data);
+                const thumbSrc = img.imagemBase64;
                 return (
                   <div
                     key={i}
                     onClick={() => setSelected(i)}
                     className={`flex-shrink-0 cursor-pointer border-2 rounded-lg transition-all ${selected === i
-                        ? "border-content-primary scale-105"
-                        : "border-transparent"
+                      ? "border-content-primary scale-105"
+                      : "border-transparent"
                       }`}
                   >
                     <div className="w-[100px] h-[60px] relative rounded-lg overflow-hidden">

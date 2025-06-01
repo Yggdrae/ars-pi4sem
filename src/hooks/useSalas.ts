@@ -77,6 +77,11 @@ export function useSalas() {
     return data;
   }, []);
 
+  const reorderImagens = useCallback(async (input: { salaId: number, ids: number[] }) => {
+    const { data } = await api.post(`/salas_imagens/reorganizar`, input);
+    return data;
+  }, []);
+
   return {
     getSalas,
     getSalasFull,
@@ -89,5 +94,6 @@ export function useSalas() {
     removeRecursoSala,
     addRecursoSala,
     deleteSala,
+    reorderImagens,
   };
 }

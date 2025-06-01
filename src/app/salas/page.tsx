@@ -29,15 +29,6 @@ export default function Salas() {
   const [modalItem, setModalItem] = useState<any>();
   const [filteredSalas, setFilteredSalas] = useState<any>(salas);
 
-  function bufferArrayToBase64(data: number[]): string {
-    const uint8Array = new Uint8Array(data);
-    const binaryString = uint8Array.reduce(
-      (acc, byte) => acc + String.fromCharCode(byte),
-      ""
-    );
-    return "data:image/png;base64," + btoa(binaryString);
-  }
-
   return (
     <Layout>
       <Text className="text-[24px] sm:text-[30px] text-content-primary font-family-heading font-bold mb-6">
@@ -64,7 +55,7 @@ export default function Salas() {
                 })}
                 backgroundImage={
                   sala.salasImagens.length > 0
-                    ? bufferArrayToBase64(sala.salasImagens[0].imagem.data)
+                    ? sala.salasImagens[0].imagemBase64
                     : require("@/assets/conference-room.png")
                 }
                 backgroundAlt={`Foto da sala ${sala.nome}`}

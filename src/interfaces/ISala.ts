@@ -15,8 +15,7 @@ interface ISala {
   }[];
   salasImagens: {
     id: number;
-    imagem: {
-      data: number[];
-    }
+    imagemBase64: string;
+    ordem: number;
   }[]
 }

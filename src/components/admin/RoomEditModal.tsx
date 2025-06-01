@@ -8,6 +8,11 @@ import { useSalas } from "@/hooks/useSalas";
 import Image from "next/image";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useToast } from "@/context/ToastContext";
+import { HStack } from "../HStack";
+import { useMediaQuery } from "react-responsive";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableImage } from "../SortableImage";
 
 interface RoomEditModalProps {
   salaId: number;
@@ -20,11 +25,13 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
     updateSala,
     removeImagem,
     uploadImagem,
+    reorderImagens,
     removeRecursoSala,
     addRecursoSala,
   } = useSalas();
   const { getRecursos } = useRecursos();
   const { showToast } = useToast();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   const [isLoading, setIsLoading] = useState(false);
   const [sala, setSala] = useState<ISala | null>(null);
@@ -37,26 +44,20 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
   useEffect(() => {
     if (salaId) {
       getSalaFullById(salaId).then((data) => {
-        console.warn(data);
         setSala(data);
         setNumero(data.numero);
         setAndar(data.andar);
         setValorHora(data.valorHora);
         setRecursos(data.salasRecursos);
       });
-      getRecursos().then((data) => {
-        setTodosRecursos(data);
-      });
+      getRecursos().then(setTodosRecursos);
     }
   }, [salaId]);
 
   const handleImagemChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Imagem excede 2MB.");
-      return;
-    }
+    if (file.size > 2 * 1024 * 1024) return alert("Imagem excede 2MB.");
     await uploadImagem({ salaId, imagem: file });
     const updated = await getSalaFullById(salaId);
     setSala(updated);
@@ -95,86 +96,66 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
 
   const handleSalvar = async () => {
     setIsLoading(true);
-
-    setTimeout(async () => {
-      await updateSala(salaId, {
-        numero,
-        andar,
-        valorHora,
+    await updateSala(salaId, { numero, andar, valorHora })
+      .then(() => {
+        showToast("Sala atualizada com sucesso!", "success");
+        onClose();
       })
-        .then(() => {
-          showToast("Sala atualizada com sucesso!", "success");
-          onClose();
-        })
-        .catch(() => {
-          showToast("Erro ao atualizar sala.", "error");
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }, 2000);
+      .catch(() => showToast("Erro ao atualizar sala.", "error"))
+      .finally(() => setIsLoading(false));
+  };
+
+  const handleDragEnd = async (event: any) => {
+    const { active, over } = event;
+    if (!active || !over || active.id === over.id) return;
+
+    const oldIndex = sala!.salasImagens.findIndex((img) => img.id === active.id);
+    const newIndex = sala!.salasImagens.findIndex((img) => img.id === over.id);
+    const reordered = arrayMove(sala!.salasImagens, oldIndex, newIndex);
+
+    setSala({ ...sala!, salasImagens: reordered });
+    await reorderImagens({ salaId, ids: reordered.map((img) => img.id) });
   };
 
   if (!sala) return null;
 
   return (
-    <Modal isOpen={!!salaId} onClose={onClose} title={`Editar Sala ${numero}`}>
-      <VStack className="gap-4">
-        <InputText
-          id="numero"
-          label="Número da sala"
-          value={numero}
-          onChange={(e) => setNumero(e.target.value)}
-        />
-        <InputText
-          id="andar"
-          label="Andar"
-          value={andar}
-          onChange={(e) => setAndar(e.target.value)}
-        />
-        <InputText
-          id="valorHora"
-          label="Valor por hora"
-          value={valorHora}
-          onChange={(e) => setValorHora(e.target.value)}
-        />
+    <Modal
+      isOpen={!!salaId}
+      onClose={onClose}
+      title={`Editar Sala ${numero}`}
+      className="max-w-7xl w-full"
+    >
+      <VStack className="gap-6 p-4 md:flex-row flex-col">
+        <VStack className="flex-1 gap-4">
+          <InputText id="numero" label="Número da sala" value={numero} onChange={(e) => setNumero(e.target.value)} />
+          <InputText id="andar" label="Andar" value={andar} onChange={(e) => setAndar(e.target.value)} />
+          <InputText id="valorHora" label="Valor por hora" value={valorHora} onChange={(e) => setValorHora(e.target.value)} />
+        </VStack>
 
-        <div>
-          <Text className="mb-2 font-semibold text-content-primary">
-            Imagens da sala
-          </Text>
+        <VStack className="flex-1 gap-4">
+          <Text className="font-semibold text-content-primary">Imagens da sala</Text>
           <input type="file" accept="image/*" onChange={handleImagemChange} />
-          <div className="flex gap-2 mt-2 flex-wrap">
-            {sala &&
-              sala.salasImagens.map((img: any, idx: number) => (
-                <div key={idx} className="relative group">
-                  <Image
-                    src={`data:image/jpeg;base64,${btoa(
-                      String.fromCharCode(...img.imagem.data)
-                    )}`}
-                    width={100}
-                    height={100}
-                    alt="sala"
-                    className="rounded"
-                    onClick={() => console.log(img.id)}
-                  />
-                  <button
-                    className="absolute top-1 right-1 text-red-500 bg-black bg-opacity-50 rounded px-1 hidden group-hover:block"
-                    onClick={() => {
-                      handleRemoverImagem(img.id);
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-          </div>
-        </div>
 
-        <div>
-          <Text className="mb-2 font-semibold text-content-primary">
-            Recursos
-          </Text>
+          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext
+              items={sala.salasImagens.map((img) => img.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {sala.salasImagens.map((img) => (
+                  <SortableImage
+                    key={img.id}
+                    id={img.id}
+                    src={img.imagemBase64}
+                    onRemove={() => handleRemoverImagem(img.id)}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+
+          <Text className="font-semibold text-content-primary">Recursos</Text>
           <div className="flex flex-wrap gap-2">
             {recursos.map((r) => (
               <div
@@ -191,6 +172,7 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
               </div>
             ))}
           </div>
+
           <select
             className="mt-2 bg-gray-800 text-white p-2 rounded"
             onChange={(e) => handleAdicionarRecurso(Number(e.target.value))}
@@ -209,14 +191,12 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
               </option>
             ))}
           </select>
-        </div>
-
-        <Button
-          title="Salvar alterações"
-          onClick={handleSalvar}
-          loading={isLoading}
-        />
+        </VStack>
       </VStack>
+
+      <div className="mt-6">
+        <Button title="Salvar alterações" onClick={handleSalvar} loading={isLoading} />
+      </div>
     </Modal>
   );
 }

@@ -9,6 +9,7 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'full';
+  className?: string;
 }
 
 const sizeClasses = {
@@ -25,6 +26,7 @@ export const Modal = ({
   children,
   footer,
   size = 'md',
+  className,
 }: ModalProps) => {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
@@ -39,7 +41,7 @@ export const Modal = ({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div
-        className={`bg-[#1E1E1E] text-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}
+        className={`${className} bg-[#1E1E1E] text-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}
       >
         <div className="flex justify-between items-center border-b border-[#333] px-6 py-4">
           <h2 className="text-lg font-semibold">{title}</h2>
