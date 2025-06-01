@@ -4,10 +4,16 @@ import { FilterSection } from "@/components/FilterSection";
 import { SalaCard } from "@/components/SalaCard";
 import { Text } from "@/components/Text";
 import { Layout } from "@/components/ui/Layout";
+import { useAuth } from "@/context/authContext";
+import { useToast } from "@/context/ToastContext";
 import { useSalas } from "@/hooks/useSalas";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Salas() {
+  const router = useRouter();
+  const { userData } = useAuth();
+  const { showToast } = useToast();
   const { getSalasFull } = useSalas();
   const [salas, setSalas] = useState([]);
   useEffect(() => {
@@ -63,6 +69,12 @@ export default function Salas() {
                 }
                 backgroundAlt={`Foto da sala ${sala.nome}`}
                 onClick={() => {
+                  if (userData === null) {
+                    localStorage.setItem("redirectAfterLogin", `/salas`);
+                    showToast("Faça login para poder reservar uma sala", "error");
+                    router.push("/login");
+                    return;
+                  }
                   setModalIsOpen(true);
                   setModalItem(sala);
                 }}

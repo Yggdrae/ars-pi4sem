@@ -30,7 +30,13 @@ export const LoginForm = ({ className = "" }: { className?: string }) => {
         );
         await login();
         showToast("Login realizado com sucesso!", "success");
-        router.replace("/");
+        const redirectPath = localStorage.getItem("redirectAfterLogin");
+        if (redirectPath) {
+          localStorage.removeItem("redirectAfterLogin");
+          router.push(redirectPath);
+          return;
+        }
+        router.push("/");
       } catch {
         showToast("Erro no login. Verifique suas credenciais.", "error");
       } finally {
