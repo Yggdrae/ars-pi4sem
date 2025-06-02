@@ -39,6 +39,7 @@ export function useSalas() {
         numero: string;
         andar: string;
         valorHora: string;
+        capacidade: string;
       }
     ) => {
       const { data } = await api.put(`/salas/${id}`, input);

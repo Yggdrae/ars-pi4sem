@@ -13,7 +13,14 @@ interface RoomTabRecursosProps {
   isCreating?: boolean;
 }
 
-export function RoomTabRecursos({ sala, setSala, todosRecursos, recursosSelecionados = [], setRecursosSelecionados, isCreating = false }: RoomTabRecursosProps) {
+export function RoomTabRecursos({
+  sala,
+  setSala,
+  todosRecursos,
+  recursosSelecionados = [],
+  setRecursosSelecionados,
+  isCreating = false,
+}: RoomTabRecursosProps) {
   const { removeRecursoSala, addRecursoSala, getSalaFullById } = useSalas();
   const { showToast } = useToast();
 
@@ -48,29 +55,11 @@ export function RoomTabRecursos({ sala, setSala, todosRecursos, recursosSelecion
 
   const recursosAtuais = isCreating
     ? recursosSelecionados.map((id) => todosRecursos.find((r) => r.id === id))
-    : sala.salasRecursos.map((r: any) => r.recurso);
+    : sala.salasRecursos.map((r: any) => r);
 
   return (
     <VStack className="gap-4">
       <Text className="font-semibold text-content-primary">Recursos</Text>
-
-      <div className="flex flex-wrap gap-2">
-        {recursosAtuais.map((r: any) => (
-          <div
-            key={r.id}
-            className="relative px-3 py-1 bg-gray-700 text-white rounded-full group cursor-pointer"
-          >
-            {r.nome}
-            <button
-              onClick={() => handleRemoverRecurso(r.id)}
-              className="absolute -top-2 -right-2 text-sm bg-red-500 rounded-full px-2 hidden group-hover:block"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-
       <select
         className="mt-2 bg-gray-800 text-white p-2 rounded"
         onChange={(e) => handleAdicionarRecurso(Number(e.target.value))}
@@ -83,12 +72,33 @@ export function RoomTabRecursos({ sala, setSala, todosRecursos, recursosSelecion
           <option
             key={r.id}
             value={r.id}
-            disabled={recursosSelecionados.includes(r.id) || recursosAtuais.some((s: any) => s.id === r.id)}
+            disabled={
+              recursosSelecionados.includes(r.id) ||
+              recursosAtuais.some((s: any) => s.id === r.id)
+            }
           >
             {r.nome}
           </option>
         ))}
       </select>
+
+      <div className="flex flex-wrap gap-2">
+        {recursosAtuais.map((r: any) => (
+          <div
+            key={r.id}
+            className="relative px-3 py-1 bg-gray-700 text-white rounded-full group cursor-pointer"
+            onClick={() => console.log(r.id)}
+          >
+            {r.recurso.nome}
+            <button
+              onClick={() => handleRemoverRecurso(r.id)}
+              className="absolute -top-2 -right-2 text-sm bg-red-500 rounded-full px-2 hidden group-hover:block"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
     </VStack>
   );
 }

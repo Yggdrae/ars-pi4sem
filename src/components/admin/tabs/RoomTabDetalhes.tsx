@@ -6,59 +6,67 @@ import { useToast } from "@/context/ToastContext";
 import { useSalas } from "@/hooks/useSalas";
 
 interface RoomTabDetalhesProps {
-    sala: any;
-    setSala: (sala: any) => void;
-    onClose: () => void;
-    isCreating?: boolean;
+  sala: any;
+  setSala: (sala: any) => void;
+  onClose: () => void;
+  isCreating?: boolean;
 }
 
-export function RoomTabDetalhes({ sala, setSala, onClose, isCreating = false }: RoomTabDetalhesProps) {
-    const { updateSala } = useSalas();
-    const { showToast } = useToast();
+export function RoomTabDetalhes({
+  sala,
+  setSala,
+  onClose,
+  isCreating = false,
+}: RoomTabDetalhesProps) {
+  const { updateSala } = useSalas();
+  const { showToast } = useToast();
 
-    const [numero, setNumero] = useState("");
-    const [andar, setAndar] = useState("");
-    const [valorHora, setValorHora] = useState("");
-    const [capacidade, setCapacidade] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-    useEffect(() => {
-        setNumero(String(sala.numero || ""));
-        setAndar(String(sala.andar || ""));
-        setValorHora(String(sala.valorHora || ""));
-        setCapacidade(String(sala.capacidade || ""));
-    }, [sala]);
+  /* const handleSalvar = async () => {
+    setIsLoading(true);
+    try {
+      await updateSala(sala.id, { numero, andar, valorHora });
+      showToast("Sala atualizada com sucesso!", "success");
+      onClose();
+    } catch {
+      showToast("Erro ao atualizar sala.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  }; */
 
-    const handleSalvar = async () => {
-        setIsLoading(true);
-        try {
-            await updateSala(sala.id, { numero, andar, valorHora });
-            showToast("Sala atualizada com sucesso!", "success");
-            onClose();
-        } catch {
-            showToast("Erro ao atualizar sala.", "error");
-        } finally {
-            setIsLoading(false);
+  return (
+    <VStack className="gap-4">
+      <InputText
+        id="numero"
+        label="Número da sala"
+        value={sala.numero || ""}
+        onChange={(e) => setSala({ ...sala, numero: Number(e.target.value) })}
+      />
+      <InputText
+        id="andar"
+        label="Andar"
+        value={sala.andar || ""}
+        onChange={(e) => setSala({ ...sala, andar: Number(e.target.value) })}
+      />
+      <InputText
+        id="valorHora"
+        label="Valor por hora"
+        value={sala.valorHora || ""}
+        onChange={(e) =>
+          setSala({ ...sala, valorHora: Number(e.target.value) })
         }
-    };
-
-    useEffect(() => {
-        if (isCreating) {
-            setSala({ numero, andar, valorHora });
+      />
+      <InputText
+        id="capacidade"
+        label="Capacidade"
+        value={sala.capacidade || ""}
+        onChange={(e) =>
+          setSala({ ...sala, capacidade: Number(e.target.value) })
         }
-    }, [numero, andar, valorHora]);
-
-    return (
-        <VStack className="gap-4">
-            <InputText id="numero" label="Número da sala" value={numero} onChange={(e) => setNumero(e.target.value)} />
-            <InputText id="andar" label="Andar" value={andar} onChange={(e) => setAndar(e.target.value)} />
-            <InputText id="valorHora" label="Valor por hora" value={valorHora} onChange={(e) => setValorHora(e.target.value)} />
-            <InputText id="capacidade" label="Capacidade" value={capacidade} onChange={(e) => setCapacidade(e.target.value)} />
-            {!isCreating && (
-                <div className="mt-4">
-                    <Button title="Salvar alterações" onClick={handleSalvar} loading={isLoading} />
-                </div>
-            )}
-        </VStack>
-    );
+      />
+    </VStack>
+  );
 }
