@@ -12,13 +12,19 @@ export function useHorarios() {
     return response.data;
   }, []);
 
+  const criaHorarioSala = useCallback(async (payload: IHorarioPayload) => {
+    const response = await api.post(`/disponibilidadeSalas`, payload);
+    return response.data;
+  }, []);
+
   const updateHorariosSala = useCallback(async (payload: IHorarioPayload[]) => {
-    const response = await api.put(`/disponibilidadeSalas`, payload);
+    const response = await api.put(`/disponibilidadeSalas/upsert`, payload);
     return response.data;
   }, []);
 
   return {
     getHorariosBySala,
+    criaHorarioSala,
     updateHorariosSala,
   };
 }

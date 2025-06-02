@@ -47,13 +47,6 @@ export const SalasTab = () => {
       },
     },
     {
-      label: "Editar Horários",
-      onClick: (row: ISala) => {
-        setSalaId(row.id);
-        setTipoModal("horarios");
-      },
-    },
-    {
       label: "Excluir",
       onClick: (row: ISala) => {
         setConfirmationRequired(true);
@@ -96,16 +89,6 @@ export const SalasTab = () => {
           onClose={async () => {
             setSalaId(null);
             const updated = await getSalas(); // recarrega a lista
-            setSalas(updated);
-          }}
-        />
-      )}
-      {salaId && tipoModal === "horarios" && (
-        <RoomHorariosModal
-          salaId={salaId}
-          onClose={async () => {
-            setSalaId(null);
-            const updated = await getSalas();
             setSalas(updated);
           }}
         />

@@ -87,9 +87,9 @@ export function RoomTabRecursos({
           <div
             key={r.id}
             className="relative px-3 py-1 bg-gray-700 text-white rounded-full group cursor-pointer"
-            onClick={() => console.log(r.id)}
+            onClick={() => console.log(r)}
           >
-            {r.recurso.nome}
+            {!isCreating ? r.recurso.nome : r.nome}
             <button
               onClick={() => handleRemoverRecurso(r.id)}
               className="absolute -top-2 -right-2 text-sm bg-red-500 rounded-full px-2 hidden group-hover:block"

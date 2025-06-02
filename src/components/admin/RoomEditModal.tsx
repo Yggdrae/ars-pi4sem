@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "@/components/Modal";
 import { VStack } from "@/components/VStack";
 import { Text } from "@/components/Text";
-import { FaEdit, FaImages, FaPlug } from "react-icons/fa";
+import { FaClock, FaEdit, FaImages, FaPlug } from "react-icons/fa";
 import { RoomTabDetalhes } from "./tabs/RoomTabDetalhes";
 import { RoomTabImagens } from "./tabs/RoomTabImagens";
 import { RoomTabRecursos } from "./tabs/RoomTabRecursos";
@@ -10,6 +10,9 @@ import { useSalas } from "@/hooks/useSalas";
 import { useRecursos } from "@/hooks/useRecursos";
 import Button from "../Button";
 import { useToast } from "@/context/ToastContext";
+import { RoomTabHorarios } from "./tabs/RoomTabHorarios";
+import { IHorarioPayload } from "@/interfaces/IHorario";
+import { useHorarios } from "@/hooks/useHorarios";
 
 interface RoomEditModalProps {
   salaId: number;
@@ -20,6 +23,7 @@ const tabs = [
   { label: "Detalhes", key: "detalhes", icon: FaEdit },
   { label: "Imagens", key: "imagens", icon: FaImages },
   { label: "Recursos", key: "recursos", icon: FaPlug },
+  { label: "Horários", key: "horarios", icon: FaClock },
 ];
 
 export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
@@ -28,12 +32,11 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
   const {
     updateSala,
     reorderImagens,
-    removeImagem,
-    uploadImagem,
     removeRecursoSala,
     addRecursoSala,
     getSalaFullById,
   } = useSalas();
+  const { updateHorariosSala } = useHorarios();
   const { getRecursos } = useRecursos();
   const { showToast } = useToast();
 
@@ -45,6 +48,17 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
   const [recursosSelecionados, setRecursosSelecionados] = useState<number[]>(
     []
   );
+  const [horarios, setHorarios] = useState<
+    { diaDaSemana: number; horarioInicio: string; horarioFim: string }[]
+  >([
+    { diaDaSemana: 1, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 2, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 3, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 4, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 5, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 6, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 7, horarioInicio: "", horarioFim: "" },
+  ]);
 
   useEffect(() => {
     if (salaId) {
@@ -54,12 +68,42 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
         setRecursosSelecionados(
           data.salasRecursos.map((r: any) => r.recurso.id)
         );
+        data.disponibilidades.map((d: any) => {
+          const horario = horarios.find((h) => h.diaDaSemana === d.diaDaSemana);
+          if (horario) {
+            horario.horarioInicio = d.horarioInicio;
+            horario.horarioFim = d.horarioFim;
+          }
+          return horario;
+        });
+        setHorarios(horarios);
       });
       getRecursos().then(setTodosRecursos);
     }
   }, [salaId]);
 
+  const checkFields = () => {
+    let notFilled = [];
+    if (!sala!.numero) notFilled.push("Número");
+    if (!sala!.andar) notFilled.push("Andar");
+    if (!sala!.valorHora) notFilled.push("Valor por hora");
+    if (!sala!.capacidade) notFilled.push("Capacidade");
+
+    let horariosFilled = 0;
+    horarios.map((horario) => {
+      if (horario.horarioInicio !== "" && horario.horarioFim !== "") horariosFilled += 1;
+    });
+
+    if(horariosFilled === 0) showToast("Preencha ao menos um horário", "error");
+    if(notFilled.length > 0) showToast(`Preencha todos detalhes da sala`, "error");
+
+    return notFilled.length === 0 && horariosFilled > 0;
+  };
+
   const handleSalvar = async () => {
+    const isValid = checkFields();
+    if(!isValid) return;
+    
     if (!sala) return;
     setIsLoading(true);
     try {
@@ -89,6 +133,21 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
           await addRecursoSala({ sala: sala.id, recurso: id, quantidade: 1 });
         }
       }
+
+      let horariosReq: IHorarioPayload[] = [];
+
+      for (const horario of horarios) {
+        if (horario.horarioInicio !== "" && horario.horarioFim !== "") {
+          horariosReq.push({
+            salaId: sala.id,
+            diaDaSemana: horario.diaDaSemana,
+            horarioInicio: horario.horarioInicio,
+            horarioFim: horario.horarioFim,
+          });
+        }
+      }
+
+      await updateHorariosSala(horariosReq);
 
       showToast("Sala atualizada com sucesso!", "success");
       onClose();
@@ -159,6 +218,13 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
             isCreating={false}
             recursosSelecionados={recursosSelecionados}
             setRecursosSelecionados={setRecursosSelecionados}
+          />
+        )}
+        {selectedTab === "horarios" && (
+          <RoomTabHorarios
+            horarios={horarios}
+            setHorarios={setHorarios}
+            isCreating={false}
           />
         )}
 

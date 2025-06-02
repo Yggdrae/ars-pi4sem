@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/Modal";
 import { VStack } from "@/components/VStack";
 import { Text } from "@/components/Text";
-import { FaEdit, FaImages, FaPlug } from "react-icons/fa";
+import { FaClock, FaEdit, FaImages, FaPlug } from "react-icons/fa";
 import { RoomTabDetalhes } from "./tabs/RoomTabDetalhes";
 import { RoomTabImagens } from "./tabs/RoomTabImagens";
 import { RoomTabRecursos } from "./tabs/RoomTabRecursos";
@@ -11,11 +11,14 @@ import { useSalas } from "@/hooks/useSalas";
 import { useRecursos } from "@/hooks/useRecursos";
 import { useToast } from "@/context/ToastContext";
 import Button from "@/components/Button";
+import { RoomTabHorarios } from "./tabs/RoomTabHorarios";
+import { useHorarios } from "@/hooks/useHorarios";
 
 const tabs = [
   { label: "Detalhes", key: "detalhes", icon: FaEdit },
   { label: "Imagens", key: "imagens", icon: FaImages },
   { label: "Recursos", key: "recursos", icon: FaPlug },
+  { label: "Horários", key: "horarios", icon: FaClock },
 ];
 
 export default function RoomCreateModal({
@@ -27,6 +30,7 @@ export default function RoomCreateModal({
 }) {
   const { createSala, uploadImagem, addRecursoSala, getSalas } = useSalas();
   const { getRecursos } = useRecursos();
+  const { criaHorarioSala } = useHorarios();
   const { showToast } = useToast();
 
   const [selectedTab, setSelectedTab] = useState("detalhes");
@@ -41,6 +45,17 @@ export default function RoomCreateModal({
     []
   );
   const [todosRecursos, setTodosRecursos] = useState<any[]>([]);
+  const [horarios, setHorarios] = useState<
+    { diaDaSemana: number; horarioInicio: string; horarioFim: string }[]
+  >([
+    { diaDaSemana: 1, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 2, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 3, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 4, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 5, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 6, horarioInicio: "", horarioFim: "" },
+    { diaDaSemana: 7, horarioInicio: "", horarioFim: "" },
+  ]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,7 +63,29 @@ export default function RoomCreateModal({
     getRecursos().then(setTodosRecursos);
   }, []);
 
+  const checkFields = () => {
+    let notFilled = [];
+    if (!numero) notFilled.push("Número");
+    if (!andar) notFilled.push("Andar");
+    if (!valorHora) notFilled.push("Valor por hora");
+    if (!capacidade) notFilled.push("Capacidade");
+
+    let horariosFilled = 0;
+    horarios.map((horario) => {
+      if (horario.horarioInicio !== "" && horario.horarioFim !== "") horariosFilled += 1;
+    });
+
+    if(horariosFilled === 0) showToast("Preencha ao menos um horário", "error");
+    if(notFilled.length > 0) showToast(`Preencha todos detalhes da sala`, "error");
+
+    return notFilled.length === 0 && horariosFilled > 0;
+  };
+
   const handleSalvar = async () => {
+    const isValid = checkFields();
+
+    if (!isValid) return;
+
     setIsLoading(true);
     setTimeout(async () => {
       try {
@@ -69,6 +106,17 @@ export default function RoomCreateModal({
             recurso: recursoId,
             quantidade: 1,
           });
+        }
+
+        for (const horario of horarios) {
+          if(horario.horarioInicio !== "" && horario.horarioFim !== "") {
+            await criaHorarioSala({
+              salaId: novaSala.id,
+              diaDaSemana: horario.diaDaSemana,
+              horarioInicio: horario.horarioInicio,
+              horarioFim: horario.horarioFim,
+            });
+          }
         }
 
         showToast("Sala criada com sucesso!", "success");
@@ -157,6 +205,14 @@ export default function RoomCreateModal({
               setAndar(andar);
               setValorHora(valorHora);
             }}
+          />
+        )}
+
+        {selectedTab === "horarios" && (
+          <RoomTabHorarios
+            isCreating
+            horarios={horarios}
+            setHorarios={setHorarios}
           />
         )}
 

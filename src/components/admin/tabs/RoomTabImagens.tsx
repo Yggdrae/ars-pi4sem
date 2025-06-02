@@ -1,6 +1,7 @@
 import { SortableImage } from "@/components/SortableImage";
 import { Text } from "@/components/Text";
 import { VStack } from "@/components/VStack";
+import { useToast } from "@/context/ToastContext";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -29,6 +30,7 @@ export function RoomTabImagens({
   imagensReordenadas = [],
   setImagensReordenadas,
 }: RoomTabImagensProps) {
+  const { showToast } = useToast();
   const handleImagemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -47,6 +49,9 @@ export function RoomTabImagens({
   };
 
   const handleRemoverImagem = (indexOrId: number) => {
+    if(!isCreating && imagens.length === 1){
+       showToast('Você precisa ter pelo menos uma imagem', "error");
+    }
     if (isCreating && setImagens) {
       const novas = [...imagens];
       novas.splice(indexOrId, 1);
