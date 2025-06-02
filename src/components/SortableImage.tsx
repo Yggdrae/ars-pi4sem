@@ -3,6 +3,7 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Image from "next/image";
+import { FaTimes } from "react-icons/fa";
 
 interface SortableImageProps {
     id: string | number;
@@ -38,7 +39,7 @@ export const SortableImage = ({ id, src, onRemove }: SortableImageProps) => {
                 onClick={onRemove}
                 className="absolute top-1 right-1 text-red-500 bg-black bg-opacity-50 rounded px-1 hidden group-hover:block"
             >
-                ×
+                <FaTimes color="red"/>
             </button>
         </div>
     );

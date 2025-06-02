@@ -34,6 +34,7 @@ export function RoomTabImagens({
   const handleImagemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
+    console.log("AAA");
 
     const validFiles: File[] = files.filter(
       (file) => file.size <= 2 * 1024 * 1024
@@ -45,18 +46,27 @@ export function RoomTabImagens({
 
     if (!validFiles.length) return;
 
-    setImagens && setImagens([...imagens, ...validFiles]);
+    if (isCreating && setImagens) {
+      setImagens(validFiles);
+    } else if (setImagensReordenadas) {
+      const novas = validFiles.map((file, index) => ({
+        id: index + 1 + imagensReordenadas.length,
+        imagemBase64: URL.createObjectURL(file),
+      }));
+      setImagensReordenadas([...imagensReordenadas, ...novas]);
+    }
   };
 
   const handleRemoverImagem = (indexOrId: number) => {
-    if(!isCreating && imagens.length === 1){
-       showToast('Você precisa ter pelo menos uma imagem', "error");
-    }
     if (isCreating && setImagens) {
       const novas = [...imagens];
       novas.splice(indexOrId, 1);
       setImagens(novas);
     } else if (setImagensReordenadas) {
+      if (imagensReordenadas.length === 1) {
+        showToast("A sala precisa ter ao menos uma imagem", "error");
+        return;
+      }
       const novas = imagensReordenadas.filter((img) => img.id !== indexOrId);
       setImagensReordenadas(novas);
     }
@@ -79,6 +89,7 @@ export function RoomTabImagens({
   };
 
   const imagensParaExibir = isCreating ? imagens : imagensReordenadas;
+  console.log(isCreating ? "imagens" : "imagensReordenadas");
 
   return (
     <VStack className="gap-4">

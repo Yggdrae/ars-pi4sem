@@ -74,7 +74,8 @@ export default function RoomCreateModal({
     horarios.map((horario) => {
       if (horario.horarioInicio !== "" && horario.horarioFim !== "") horariosFilled += 1;
     });
-
+    
+    if(imagens.length === 0) showToast("Faça upload de ao menos uma imagem", "error");
     if(horariosFilled === 0) showToast("Preencha ao menos um horário", "error");
     if(notFilled.length > 0) showToast(`Preencha todos detalhes da sala`, "error");
 
