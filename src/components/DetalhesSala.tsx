@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Accordion } from "./Accordion";
 import { Divider } from "./Divider";
 import { useToast } from "@/context/ToastContext";
+import { useReserva } from "@/hooks/useReserva";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -32,6 +33,7 @@ export default function RoomDetailsModal({
 }: RoomDetailsModalProps) {
   const { userData } = useAuth();
   const { showToast } = useToast();
+  const { createReserva } = useReserva();
   const { getHorariosBySala } = useHorarios();
   const { getCartoes, adicionarCartao, pagamento } = useCartao();
   const [range, setRange] = useState<{ start: string; end: string } | null>(
@@ -144,7 +146,18 @@ export default function RoomDetailsModal({
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PagamentoPix12345"
       );
       setLoadingPixMethod(false);
-    }, 1500);
+    }, 500);
+    setTimeout(() => {
+      if (!qrCode) return;
+      setLoading(true);
+    }, 8000)
+    setTimeout(() => {
+      if (!qrCode) {
+        return;
+      }
+      setLoading(false);
+      setStep(3);
+    }, 10000)
   };
 
   const handleClose = () => {
@@ -180,26 +193,56 @@ export default function RoomDetailsModal({
 
   const handlePagamento = async () => {
     setLoading(true);
+    console.log("entrou função")
 
     setTimeout(async () => {
-      const cartaoCriado = checkCartaoFields() ? await adicionarCartao({
+      if (!checkCartaoFields() && inserirNovoCartao) return;
+
+      const cartaoCriado = await adicionarCartao({
         numero: novoCartao.numero,
         nomeTitular: novoCartao.nome,
         validade: novoCartao.validade,
         cvv: novoCartao.cvv,
         bandeira: "novoCartao.bandeira",
         usuarioId: userData!.id,
-      }) : ""
-      await pagamento({
+      }).then((data) => {
+        return data;
+      }).catch((data) => {
+        if (data.response.status === 409) showToast("Cartão já cadastrado.", "error");
+        else showToast("Erro ao adicionar cartão.", "error");
+        setLoading(false);
+        return "";
+      })
+
+      if (cartaoCriado === "") return;
+
+      const pagamentoOk = await pagamento({
         valor: total,
         metodo: paymentMethod!,
         usuarioId: userData!.id,
         cartaoId: cartaoCriado.id || cartaoSelecionado?.id,
-      }).then((data) => {
-        showToast("Pagamento realizado com sucesso!", "success");
-        handleNext();
+      }).then(() => {
+        return true;
       }).catch(() => {
-        showToast("Erro ao realizar pagamento.", "error");
+        showToast("Erro ao realizar pagamento. Verifique seu cartão.", "error");
+        setLoading(false);
+        return false
+      })
+
+      if (!pagamentoOk) return;
+
+      await createReserva({
+        sala: room.id,
+        usuario: userData!.id,
+        diaHoraInicio: `${selectedDate} ${range!.start}`,
+        diaHoraFim: `${selectedDate} ${range!.end}`,
+        status: "Confirmada",
+        valorHoraNaReserva: total,
+      }).then(() => {
+        showToast("Reserva realizada com sucesso.", "success");
+        onClose();
+      }).catch(() => {
+        showToast("Erro ao realizar reserva.", "error");
       }).finally(() => {
         setLoading(false);
       })
@@ -395,13 +438,13 @@ export default function RoomDetailsModal({
                 transition={{ duration: 0.5 }}
               >
                 <HStack className="justify-between">
-                  <VStack className="gap-4 w-1/2 p-6">
+                  <VStack className="gap-4 w-1/2 2xl:p-6 xl:p-3">
                     <div className="w-full justify-center items-center translate-x-[20%]">
                       <Text className="font-semibold mb-2 text-white text-center">
                         Escolha o método de pagamento:
                       </Text>
 
-                      <VStack className="gap-4">
+                      <VStack className="2xl:gap-4 xl:gap-1">
                         <Accordion title="Pix" isOpen={paymentMethod === "pix"} onToggle={() => {
                           if (paymentMethod === "pix") return;
                           setPaymentMethod("pix");
@@ -420,7 +463,11 @@ export default function RoomDetailsModal({
                           )}
                         </Accordion>
 
-                        <Accordion title="Cartão de Crédito" isOpen={paymentMethod === "credit"} onToggle={() => setPaymentMethod("credit")}>
+                        <Accordion title="Cartão de Crédito" isOpen={paymentMethod === "credit"} onToggle={() => {
+                          setPaymentMethod("credit");
+                          setLoading(false);
+                          setQrCode(null);
+                        }}>
                           {paymentMethod === "credit" && (
                             <>
                               {!inserirNovoCartao ? (
@@ -461,7 +508,7 @@ export default function RoomDetailsModal({
                                   </button>
                                 </VStack>
                               ) : (
-                                <VStack className="gap-4 items-center justify-center w-full p-2">
+                                <VStack className="gap-4 items-center justify-center w-full 2xl:max-h-[50vh] xl:max-h-[50vh] p-2">
                                   <VStack className="gap-2 justify-center">
                                     <InputText
                                       id="numero"
@@ -524,7 +571,7 @@ export default function RoomDetailsModal({
                                   </VStack>
 
                                   <button
-                                    className="mt-4 text-sm text-content-primary underline"
+                                    className="2xl:mt-4 text-sm text-content-primary underline"
                                     onClick={() => setInserirNovoCartao(false)}
                                   >
                                     Voltar aos cartões salvos
@@ -559,13 +606,13 @@ export default function RoomDetailsModal({
                         title="Confirmar"
                         onClick={handlePagamento}
                         style={!paymentMethod ||
-                          (paymentMethod === "pix" && !qrCode) ||
+                          (paymentMethod === "pix") ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
                             !novoCartao.numero) ? { opacity: 0.5, cursor: "not-allowed" } : {}}
                         disabled={
                           !paymentMethod ||
-                          (paymentMethod === "pix" && !qrCode) ||
+                          (paymentMethod === "pix") ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
                             !checkCartaoFields())

@@ -17,5 +17,11 @@ interface ISala {
     id: number;
     imagemBase64: string;
     ordem: number;
-  }[]
+  }[];
+  disponibilidades: {
+    id: number;
+    diaDaSemana: number;
+    horarioInicio: string;
+    horarioFim: string;
+  }
 }

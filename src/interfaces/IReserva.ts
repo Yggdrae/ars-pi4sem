@@ -23,3 +23,12 @@ export interface IReserva {
   motivoCancelamento: null;
   valorHoraNaReserva: number;
 }
+
+export interface ICreateReservaPayload {
+  usuario: number,
+  sala: number,
+  diaHoraInicio: string,
+  diaHoraFim: string,
+  status: string,
+  valorHoraNaReserva: number
+}
