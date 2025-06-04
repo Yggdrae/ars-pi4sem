@@ -7,6 +7,7 @@ import { Layout } from "@/components/ui/Layout";
 import { useAuth } from "@/context/authContext";
 import { useToast } from "@/context/ToastContext";
 import { useSalas } from "@/hooks/useSalas";
+import { ISala } from "@/interfaces/ISala";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -62,7 +63,10 @@ export default function Salas() {
                 onClick={() => {
                   if (userData === null) {
                     localStorage.setItem("redirectAfterLogin", `/salas`);
-                    showToast("Faça login para poder reservar uma sala", "error");
+                    showToast(
+                      "Faça login para poder reservar uma sala",
+                      "error"
+                    );
                     router.push("/login");
                     return;
                   }

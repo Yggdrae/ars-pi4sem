@@ -21,6 +21,7 @@ import { useToast } from "@/context/ToastContext";
 import { useReserva } from "@/hooks/useReserva";
 import { ISala } from "@/interfaces/ISala";
 import { Spinner } from "./Spinner";
+import { HorizontalScroll } from "./HorizontalScroll";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -456,17 +457,17 @@ export default function RoomDetailsModal({
                       </div>
                     </HStack>
 
-                    <HStack className="flex-wrap gap-2 mb-4">
+                    <HorizontalScroll className="gap-2 mb-4">
                       {room.salasRecursos?.map((r, i) => (
                         <HStack
                           key={i}
-                          className="bg-[#2a2a2a] px-3 py-1 rounded-lg gap-2 items-center text-sm text-white"
+                          className="bg-[#2a2a2a] px-3 py-1 rounded-lg gap-2 items-center text-sm text-white inline-flex shrink-0"
                         >
                           {getRecursoIcon(r.recurso.nome)}
                           <Text>{r.recurso.nome}</Text>
                         </HStack>
                       ))}
-                    </HStack>
+                    </HorizontalScroll>
 
                     <label
                       htmlFor="data"

@@ -2,9 +2,9 @@ import Image, { StaticImageData } from "next/image";
 import { ReactNode } from "react";
 import Button from "./Button";
 import { VStack } from "./VStack";
-import { HStack } from "./HStack";
 import { Text } from "./Text";
 import { getRecursoIcon } from "@/utils/recursosIcons";
+import { HorizontalScroll } from "./HorizontalScroll";
 
 interface DestaqueCardProps {
   backgroundImage: string | StaticImageData;
@@ -13,7 +13,7 @@ interface DestaqueCardProps {
   floor: string;
   capacity: number;
   hourValue: number;
-  resources?: { nome: string;}[];
+  resources?: { nome: string }[];
   children?: ReactNode;
   imagePosition?: string;
   objectFit?: "cover" | "contain" | "fill" | "none";
@@ -38,7 +38,7 @@ export const SalaCard = ({
 }: DestaqueCardProps) => {
   return (
     <VStack
-      className={`flex flex-col w-full sm:w-[48%] lg:w-[40%] xl:w-[32%] overflow-hidden rounded-2xl bg-[#2A2A2A] text-[#FFFFFF] border border-content-primary/20 ${className}`}
+      className={`flex flex-col w-full sm:w-[48%] lg:w-[40%] xl:w-[32%] max-h-[50vh] overflow-hidden rounded-2xl bg-[#2A2A2A] text-[#FFFFFF] border border-content-primary/20 ${className}`}
     >
       <div className="relative w-full h-56 sm:h-64">
         <Image
@@ -67,26 +67,26 @@ export const SalaCard = ({
       </div>
 
       <VStack className="flex flex-col flex-grow p-5 justify-between">
-        <VStack>
-          <h2 className="text-xl sm:text-2xl font-semibold leading-snug">{title}</h2>
+        <VStack gap={2}>
+          <h2 className="text-xl sm:text-2xl font-semibold leading-snug">
+            {title}
+          </h2>
 
           <p className="text-[14px] lg:text-[12px] text-gray-300 leading-relaxed">
             {`${floor} andar - Capacidade para ${capacity} pessoas`}
           </p>
 
-          <HStack className="flex flex-wrap gap-2 mt-2">
-            {resources.map((resource, index) => {
-              return (
-                <HStack
-                  key={index}
-                  className="px-3 py-1 bg-content-secondary text-sm rounded-lg items-center gap-1"
-                >
-                  {getRecursoIcon(resource.nome)}
-                  <Text>{resource.nome}</Text>
-                </HStack>
-              );
-            })}
-          </HStack>
+          <HorizontalScroll>
+            {resources.map((resource, index) => (
+              <div
+                key={index}
+                className="inline-flex items-center gap-1 px-3 py-1 bg-content-secondary text-sm rounded-lg mr-2 shrink-0"
+              >
+                {getRecursoIcon(resource.nome)}
+                <Text>{resource.nome}</Text>
+              </div>
+            ))}
+          </HorizontalScroll>
 
           {children && <div className="mt-2">{children}</div>}
         </VStack>

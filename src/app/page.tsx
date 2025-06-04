@@ -10,6 +10,7 @@ import { DiferenciaisSection } from "@/components/DiferenciaisSection";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSalas } from "@/hooks/useSalas";
+import { ISala } from "@/interfaces/ISala";
 
 export default function Home() {
   const { getDestaques } = useSalas();
