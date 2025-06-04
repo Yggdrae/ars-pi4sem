@@ -8,8 +8,20 @@ import Button from "@/components/Button";
 import { DestaqueCard } from "@/components/DestaqueCard";
 import { DiferenciaisSection } from "@/components/DiferenciaisSection";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useSalas } from "@/hooks/useSalas";
 
 export default function Home() {
+  const { getDestaques } = useSalas();
+  const [destaques, setDestaques] = useState<ISala[]>([]);
+
+  useEffect(() => {
+    const fetchDestaques = async () => {
+      const destaques = await getDestaques();
+      setDestaques(destaques.sort((a: ISala, b: ISala) => a.numero - b.numero));
+    };
+    fetchDestaques();
+  })
   return (
     <Layout>
       <Hero
@@ -56,30 +68,21 @@ export default function Home() {
       </HStack>
 
       <HStack className="w-full justify-center flex-wrap gap-8">
-        <DestaqueCard
-          backgroundImage={require("@/assets/destaque1.png")}
-          backgroundAlt="Sala Prime"
-          className="w-full sm:w-[48%] lg:w-[30%]"
-          title="Sala Prime"
-          description="Espaço amplo e confortável ideal para reuniões executivas e apresentações de grande porte. Equipada com TV para projeções, sistema de ar condicionado e conexão Wifi de alta velocidade para atender equipes completas."
-          badges={["14 pessoas", "TV", "Ar Condicionado", "Wifi"]}
-        />
-        <DestaqueCard
-          backgroundImage={require("@/assets/destaque2.png")}
-          backgroundAlt="Sala Nano"
-          className="w-full sm:w-[48%] lg:w-[30%]"
-          title="Sala Nano"
-          description="Ambiente compacto e funcional perfeito para reuniões rápidas e sessões de brainstorming. Conta com TV para compartilhamento de conteúdo, ar condicionado e Wifi de alta velocidade, garantindo conforto e produtividade."
-          badges={["4 pessoas", "TV", "Ar Condicionado", "Wifi"]}
-        />
-        <DestaqueCard
-          backgroundImage={require("@/assets/destaque3.png")}
-          backgroundAlt="Sala Sigma"
-          className="w-full sm:w-[48%] lg:w-[30%]"
-          title="Sala Sigma"
-          description="Sala versátil de tamanho médio para encontros colaborativos e discussões em grupo. Oferece ambiente climatizado com ar condicionado e conexão Wifi estável, proporcionando o cenário ideal para reuniões estratégicas."
-          badges={["8 pessoas", "Ar Condicionado", "Wifi"]}
-        />
+        {destaques && destaques.map((destaque: ISala) => {
+          return (
+            <DestaqueCard
+              key={destaque.numero}
+              backgroundImage={destaque.salasImagens.length > 0 ? destaque.salasImagens[0].imagemBase64 : require("@/assets/destaque1.png")}
+              backgroundAlt={`Imagem da sala ${destaque.numero}`}
+              className="w-full sm:w-[48%] lg:w-[30%]"
+              title={`Sala ${destaque.numero}`}
+              badges={destaque.salasRecursos.map((item) => item.recurso.nome)}
+              capacity={destaque.capacidade}
+              hourValue={destaque.valorHora}
+            />
+          )
+        })}
+
       </HStack>
     </Layout>
   );

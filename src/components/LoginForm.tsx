@@ -1,27 +1,92 @@
-import { useRouter } from "next/navigation"
-import Button from "./Button"
-import { HStack } from "./HStack"
-import { InputText } from "./InputText"
-import { Text } from "./Text"
-import { VStack } from "./VStack"
+import { useRouter } from "next/navigation";
+import Button from "./Button";
+import { InputText } from "./InputText";
+import { Text } from "./Text";
+import { VStack } from "./VStack";
 import Link from "next/link";
+import { useState } from "react";
+import { useAuth } from "@/context/authContext";
+import axios from "axios";
+import { useToast } from "@/context/ToastContext";
 
 export const LoginForm = ({ className = "" }: { className?: string }) => {
+  const { login } = useAuth();
+  const { showToast } = useToast();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-    return (
-        <VStack className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className}`}>
-            <Text className="text-center text-[20px] lg:text-[24px] text-content-primary font-family-heading font-bold">Acessar Conta</Text>
-            <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary font-family-heading font-bold">Entre com suas credenciais para continuar</Text>
-            <InputText id="email" label="Email" placeholder="Digite seu email" className="mt-8" />
-            <InputText id="password" type="password" label="Senha" placeholder="Digite sua senha" className="mt-8" />
-            <Text className="mt-2 text-end text-[12px] lg:text-[14px] text-content-primary font-family-heading cursor-pointer">Esqueceu sua senha?</Text>
-            <Button title={"Acessar"} className="mt-8" />
-            <HStack className="justify-center mt-8" gap={1}>
-                <Text className="text-center text-[12px] lg:text-[14px] text-content-ternary font-family-heading">Não tem uma conta?</Text>
-                <Link href={"/cadastro"} passHref>
-                    <Text className="text-center text-[12px] lg:text-[14px] text-content-primary font-family-heading cursor-pointer">Cadastre-se</Text>
-                </Link>
-            </HStack>
-        </VStack>
-    )
-}
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    setTimeout(async () => {
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
+          { email, senha },
+          { withCredentials: true }
+        );
+        await login();
+        showToast("Login realizado com sucesso!", "success");
+        const redirectPath = localStorage.getItem("redirectAfterLogin");
+        if (redirectPath) {
+          localStorage.removeItem("redirectAfterLogin");
+          router.push(redirectPath);
+          return;
+        }
+        router.push("/");
+      } catch {
+        showToast("Erro no login. Verifique suas credenciais.", "error");
+      } finally {
+        setIsLoading(false);
+      }
+    }, 2000);
+  };
+
+  return (
+    <form
+      onSubmit={handleLogin}
+      className={`w-full max-w-sm animate-fade-in flex flex-col gap-6 ${className}`}
+    >
+      <Text className="text-center text-[22px] font-bold text-content-primary">
+        Bem-vindo de volta
+      </Text>
+
+      <InputText
+        id="email"
+        label="Email"
+        placeholder="Digite seu email"
+        value={email}
+        disabled={isLoading}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <InputText
+        id="password"
+        type="password"
+        label="Senha"
+        placeholder="Digite sua senha"
+        value={senha}
+        disabled={isLoading}
+        onChange={(e) => setSenha(e.target.value)}
+      />
+
+      <Button
+        title="Acessar"
+        type="submit"
+        loading={isLoading}
+        className="w-full"
+      />
+
+      <div className="text-right">
+        <Link
+          href="/cadastro"
+          className="text-sm text-content-ternary hover:text-content-primary transition"
+        >
+          Não tenho uma conta!
+        </Link>
+      </div>
+    </form>
+  );
+};

@@ -4,6 +4,7 @@ import Button from "./Button";
 import { VStack } from "./VStack";
 import { HStack } from "./HStack";
 import { Text } from "./Text";
+import { getRecursoIcon } from "@/utils/recursosIcons";
 
 interface DestaqueCardProps {
   backgroundImage: string | StaticImageData;
@@ -12,7 +13,7 @@ interface DestaqueCardProps {
   floor: string;
   capacity: number;
   hourValue: number;
-  resources?: { nome: string; icon: any }[];
+  resources?: { nome: string;}[];
   children?: ReactNode;
   imagePosition?: string;
   objectFit?: "cover" | "contain" | "fill" | "none";
@@ -75,13 +76,12 @@ export const SalaCard = ({
 
           <HStack className="flex flex-wrap gap-2 mt-2">
             {resources.map((resource, index) => {
-              const Icon = resource.icon;
               return (
                 <HStack
                   key={index}
                   className="px-3 py-1 bg-content-secondary text-sm rounded-lg items-center gap-1"
                 >
-                  <Icon size={14} className="text-content-ternary" />
+                  {getRecursoIcon(resource.nome)}
                   <Text>{resource.nome}</Text>
                 </HStack>
               );

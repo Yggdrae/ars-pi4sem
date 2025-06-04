@@ -1,18 +1,28 @@
 "use client";
+import {
+  FaHome,
+  FaUser,
+  FaUserCircle,
+  FaTools,
+  FaSignOutAlt,
+  FaSignInAlt,
+  FaUserPlus,
+} from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { FaHome, FaUser } from "react-icons/fa";
-import Button from "../Button";
 import { HStack } from "../HStack";
 import { VStack } from "../VStack";
+import { useAuth } from "@/context/authContext";
+import { useToast } from "@/context/ToastContext";
 
 interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
 export function Navbar({ children, ...props }: NavbarProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, userData, logout } = useAuth();
+  const { showToast } = useToast();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -30,6 +40,15 @@ export function Navbar({ children, ...props }: NavbarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showUserMenu]);
+
+  const handleLogout = async () => {
+    setTimeout(async () => {
+      await logout();
+      showToast("Logout realizado com sucesso!", "success");
+      setShowUserMenu(false);
+      router.replace("/");
+    }, 2000);
+  };
 
   return (
     <div
@@ -57,38 +76,46 @@ export function Navbar({ children, ...props }: NavbarProps) {
               ref={menuRef}
               className="absolute right-0 mt-4 w-48 bg-[#2A2A2A] border border-content-primary/30 rounded-md shadow-lg py-2 z-50"
             >
-              {!isLoggedIn ? (
+              {isLoggedIn && userData ? (
                 <>
                   <Link
                     href="/perfil"
-                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
                     onClick={() => setShowUserMenu(false)}
                   >
-                    Perfil
+                    <FaUserCircle /> Perfil
                   </Link>
-                  <Link
-                    href="/logout"
-                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
-                    onClick={() => setShowUserMenu(false)}
+                  {userData.tipo === "admin" ? (
+                    <Link
+                      href="/administrar"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <FaTools /> Administrar
+                    </Link>
+                  ) : null}
+                  <button
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10 w-full text-left cursor-pointer"
+                    onClick={handleLogout}
                   >
-                    Sair
-                  </Link>
+                    <FaSignOutAlt /> Sair
+                  </button>
                 </>
               ) : (
                 <>
                   <Link
                     href="/login"
-                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
                     onClick={() => setShowUserMenu(false)}
                   >
-                    Login
+                    <FaSignInAlt /> Login
                   </Link>
                   <Link
                     href="/cadastro"
-                    className="block px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-content-primary hover:bg-[#E5D3B3]/10"
                     onClick={() => setShowUserMenu(false)}
                   >
-                    Cadastre-se
+                    <FaUserPlus /> Cadastre-se
                   </Link>
                 </>
               )}
