@@ -7,7 +7,11 @@ import Card from "./Card";
 import { Text } from "./Text";
 import ImageCarousel from "./CarrosselSalas";
 import { useHorarios } from "@/hooks/useHorarios";
-import { IHorario } from "@/interfaces/IHorario";
+import {
+  IHorario,
+  IHorarioResponse,
+  IHorariosMap,
+} from "@/interfaces/IHorario";
 import Button from "./Button";
 import { getRecursoIcon } from "@/utils/recursosIcons";
 import { useCartao } from "@/hooks/useCartao";
@@ -19,6 +23,7 @@ import { Accordion } from "./Accordion";
 import { Divider } from "./Divider";
 import { useToast } from "@/context/ToastContext";
 import { useReserva } from "@/hooks/useReserva";
+import { ISala } from "@/interfaces/ISala";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -36,10 +41,10 @@ export default function RoomDetailsModal({
   const { createReserva } = useReserva();
   const { getHorariosBySala } = useHorarios();
   const { getCartoes, adicionarCartao, pagamento } = useCartao();
-  const [range, setRange] = useState<{ start: string; end: string } | null>(
-    null
-  );
-  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
+  const [horariosDoDia, setHorariosDoDia] = useState<IHorarioResponse[]>([]);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<
+    { horario: string; ativo: boolean }[]
+  >([]);
   const [selectedDate, setSelectedDate] = useState<string>(
     () => new Date().toISOString().split("T")[0]
   );
@@ -54,69 +59,18 @@ export default function RoomDetailsModal({
   const [loading, setLoading] = useState(false);
   const [cartoesSalvos, setCartoesSalvos] = useState<ICartao[]>([]);
   const [cartaoSelecionado, setCartaoSelecionado] = useState<any | null>(null);
+  const [bandeira, setBandeira] = useState("");
   const [novoCartao, setNovoCartao] = useState({
     numero: "",
     nome: "",
     validade: "",
     cvv: "",
   });
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!room || !selectedDate) return;
-
-    setRange(null);
-    setHorariosDisponiveis([]);
-    setStep(1);
-    setPaymentMethod(null);
-    setQrCode(null);
-    setCartaoSelecionado(null);
-
-    getHorariosBySala(room.id, selectedDate).then((data: IHorario[]) => {
-      if (!data || data.length === 0) return;
-
-      const horarios: string[] = [];
-      const [startHour] = data[0].horarioInicio.split(":").map(Number);
-      const [endHour] = data[0].horarioFim.split(":").map(Number);
-
-      for (let h = startHour; h <= endHour; h++) {
-        horarios.push(String(h).padStart(2, "0") + ":00");
-      }
-
-      setHorariosDisponiveis(horarios);
-    });
-    getCartoes(userData!.id).then((data) => {
-      setCartoesSalvos(data);
-    });
-  }, [room, selectedDate]);
-
-  const selectedSlots = useMemo(() => {
-    if (!range) return [];
-    const startIndex = horariosDisponiveis.indexOf(range.start);
-    const endIndex = horariosDisponiveis.indexOf(range.end);
-    const [from, to] =
-      startIndex <= endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
-    return horariosDisponiveis.slice(from, to + 1);
-  }, [range, horariosDisponiveis]);
-
-  const horasSelecionadas = Math.max(selectedSlots.length - 1, 0);
-  const precoHora = room.valorHora;
-  const total = horasSelecionadas * precoHora;
-
-  useEffect(() => {
-    if (!qrCode || paymentMethod !== "pix") return;
-
-    const timer = setInterval(() => {
-      setTempoRestante((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [qrCode, paymentMethod]);
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
   const formatarTempo = (segundos: number) => {
     const min = Math.floor(segundos / 60)
@@ -126,44 +80,126 @@ export default function RoomDetailsModal({
     return `${min}:${sec}`;
   };
 
-  const handleSlotClick = (time: string) => {
-    if (!range) setRange({ start: time, end: time });
-    else if (range.start === range.end) {
-      const [s, e] =
-        range.start <= time ? [range.start, time] : [time, range.start];
-      setRange({ start: s, end: e });
-    } else {
-      setRange({ start: time, end: time });
+  function getProximoHorario(horario: string): string {
+    const [h, m] = horario.split(":").map(Number);
+    const novaHora = h + 1;
+    return `${String(novaHora).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  useEffect(() => {
+    if (!room || !selectedDate) return;
+
+    setStep(1);
+    setPaymentMethod(null);
+    setQrCode(null);
+    setCartaoSelecionado(null);
+    setSelectedSlots([]);
+
+    const diaDaSemana = new Date(selectedDate).getDay();
+    const disponibilidadesDoDia = room.disponibilidades?.filter(
+      (d) => d.diaDaSemana === diaDaSemana
+    );
+
+    setHorariosDoDia(disponibilidadesDoDia || []);
+    setHorariosDisponiveis([]);
+
+    getCartoes(userData!.id).then(setCartoesSalvos);
+
+    getHorariosBySala(room.id, selectedDate).then(
+      (intervalosDisponiveis: IHorario[]) => {
+        const horariosCompletos: { horario: string; ativo: boolean }[] = [];
+
+        if (disponibilidadesDoDia && disponibilidadesDoDia.length > 0) {
+          disponibilidadesDoDia.forEach(({ horarioInicio, horarioFim }) => {
+            const [startHour] = horarioInicio.split(":" as any).map(Number);
+            const [endHour] = horarioFim.split(":" as any).map(Number);
+
+            for (let h = startHour; h <= endHour; h++) {
+              const horaStr = String(h).padStart(2, "0") + ":00";
+
+              const horarioToMinutos = (h: string) => {
+                const [hh, mm] = h.split(":" as any).map(Number);
+                return hh * 60 + mm;
+              };
+
+              const estaDisponivel = intervalosDisponiveis.some((intervalo) => {
+                const hMin = horarioToMinutos(horaStr);
+                const inicioMin = horarioToMinutos(intervalo.horarioInicio);
+                const fimMin = horarioToMinutos(intervalo.horarioFim);
+                return hMin >= inicioMin && hMin + 60 <= fimMin;
+              });
+
+              horariosCompletos.push({
+                horario: horaStr,
+                ativo: estaDisponivel,
+              });
+            }
+            horariosCompletos.pop();
+          });
+        }
+
+        setHorariosDisponiveis(horariosCompletos);
+      }
+    );
+  }, [room, selectedDate]);
+
+  const horariosClicaveis = useMemo(() => {
+    if (selectedSlots.length === 0) {
+      return horariosDisponiveis.map((h) => h.horario);
     }
+
+    const indexSelecionados = selectedSlots
+      .map((horario) =>
+        horariosDisponiveis.findIndex((h) => h.horario === horario)
+      )
+      .filter((i) => i !== -1);
+
+    const min = Math.min(...indexSelecionados);
+    const max = Math.max(...indexSelecionados);
+
+    const vizinhos = new Set([
+      horariosDisponiveis[min - 1]?.horario,
+      horariosDisponiveis[max + 1]?.horario,
+    ]);
+
+    return [...selectedSlots, ...vizinhos];
+  }, [selectedSlots, horariosDisponiveis]);
+
+  const horasSelecionadas = selectedSlots.length;
+  const precoHora = room.valorHora;
+  const total = horasSelecionadas * precoHora;
+
+  const handleSlotClick = (time: string) => {
+    setSelectedSlots((prev) =>
+      prev.includes(time)
+        ? prev.filter((t) => t !== time)
+        : [...prev, time].sort()
+    );
   };
 
   const handlePixCheckout = () => {
     setLoadingPixMethod(true);
     setTempoRestante(300);
-    setQrCode(null);
-    setTimeout(() => {
-      setQrCode(
-        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PagamentoPix12345"
-      );
-      setLoadingPixMethod(false);
-    }, 500);
-    setTimeout(() => {
-      if (!qrCode) return;
-      setLoading(true);
-    }, 8000)
-    setTimeout(() => {
-      if (!qrCode) {
-        return;
-      }
-      setLoading(false);
-      setStep(3);
-    }, 10000)
+
+    delay(500);
+    setQrCode(
+      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PagamentoPix12345"
+    );
+    setLoadingPixMethod(false);
+    delay(8000);
+    console.log(qrCode);
+    if (!qrCode) return;
+    setLoading(true);
+
+    delay(2000);
+    if (!qrCode) return;
+    setLoading(false);
+    setStep(3);
   };
 
   const handleClose = () => {
     onClose();
     setStep(1);
-    setRange(null);
     setPaymentMethod(null);
     setQrCode(null);
     setCartaoSelecionado(null);
@@ -191,63 +227,107 @@ export default function RoomDetailsModal({
     );
   };
 
+  function detectarBandeira(
+    numero: string
+  ): "Elo" | "Mastercard" | "Visa" | "Desconhecida" {
+    const cleanNumero = numero.replace(/\D/g, "");
+
+    const regexes = {
+      Visa: /^4\d{0,15}$/,
+      Mastercard: /^(5[1-5]\d{0,14}|2[2-7]\d{0,14})$/,
+      Elo: /^(4011(78|79)|4312(74|75)|438935|451416|457393|457631|457632|504175|506699|509\d{3}|627780|636297|636368)\d*$/,
+    };
+
+    if (regexes.Visa.test(cleanNumero)) return "Visa";
+    if (regexes.Mastercard.test(cleanNumero)) return "Mastercard";
+    if (regexes.Elo.test(cleanNumero)) return "Elo";
+
+    return "Desconhecida";
+  }
+
   const handlePagamento = async () => {
     setLoading(true);
-    console.log("entrou função")
+    let cartaoId = 0;
 
     setTimeout(async () => {
-      if (!checkCartaoFields() && inserirNovoCartao) return;
+      if (inserirNovoCartao) {
+        if (!checkCartaoFields()) {
+          showToast("Preencha todos os campos.", "error");
+          setLoading(false);
+          return;
+        }
+        const bandeiraCartao = detectarBandeira(novoCartao.numero);
+        if (bandeiraCartao === "Desconhecida") {
+          showToast("Cartão desconhecido.", "error");
+          setLoading(false);
+          return;
+        }
 
-      const cartaoCriado = await adicionarCartao({
-        numero: novoCartao.numero,
-        nomeTitular: novoCartao.nome,
-        validade: novoCartao.validade,
-        cvv: novoCartao.cvv,
-        bandeira: "novoCartao.bandeira",
-        usuarioId: userData!.id,
-      }).then((data) => {
-        return data;
-      }).catch((data) => {
-        if (data.response.status === 409) showToast("Cartão já cadastrado.", "error");
-        else showToast("Erro ao adicionar cartão.", "error");
-        setLoading(false);
-        return "";
-      })
+        const cartaoCriado = await adicionarCartao({
+          numero: novoCartao.numero,
+          nomeTitular: novoCartao.nome,
+          validade: novoCartao.validade,
+          cvv: novoCartao.cvv,
+          bandeira: bandeira,
+          usuarioId: userData!.id,
+        })
+          .then((data) => {
+            cartaoId = data.id;
+            return data;
+          })
+          .catch((data) => {
+            if (data.response.status === 409)
+              showToast("Cartão já cadastrado.", "error");
+            else showToast("Erro ao adicionar cartão.", "error");
+            setLoading(false);
+            return "";
+          });
 
-      if (cartaoCriado === "") return;
+        if (cartaoCriado === "") return;
+      }
 
       const pagamentoOk = await pagamento({
         valor: total,
         metodo: paymentMethod!,
         usuarioId: userData!.id,
-        cartaoId: cartaoCriado.id || cartaoSelecionado?.id,
-      }).then(() => {
-        return true;
-      }).catch(() => {
-        showToast("Erro ao realizar pagamento. Verifique seu cartão.", "error");
-        setLoading(false);
-        return false
+        cartaoId: inserirNovoCartao ? cartaoId : cartaoSelecionado?.id,
       })
+        .then(() => {
+          return true;
+        })
+        .catch(() => {
+          showToast(
+            "Erro ao realizar pagamento. Verifique seu cartão.",
+            "error"
+          );
+          setLoading(false);
+          return false;
+        });
 
       if (!pagamentoOk) return;
 
       await createReserva({
         sala: room.id,
         usuario: userData!.id,
-        diaHoraInicio: `${selectedDate} ${range!.start}`,
-        diaHoraFim: `${selectedDate} ${range!.end}`,
+        diaHoraInicio: `${selectedDate} ${selectedSlots[0]}`,
+        diaHoraFim: `${selectedDate} ${getProximoHorario(
+          selectedSlots[selectedSlots.length - 1]
+        )}`,
         status: "Confirmada",
         valorHoraNaReserva: total,
-      }).then(() => {
-        showToast("Reserva realizada com sucesso.", "success");
-        onClose();
-      }).catch(() => {
-        showToast("Erro ao realizar reserva.", "error");
-      }).finally(() => {
-        setLoading(false);
       })
-    }, 2000)
-  }
+        .then(() => {
+          showToast("Reserva realizada com sucesso.", "success");
+          handleNext();
+        })
+        .catch(() => {
+          showToast("Erro ao realizar reserva.", "error");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }, 2000);
+  };
 
   if (!isOpen) return null;
 
@@ -284,26 +364,27 @@ export default function RoomDetailsModal({
                 <div key={etapa.id} className="flex flex-col items-center">
                   <div
                     className={`w-4 h-4 text-xs rounded-full border-2 flex items-center justify-center transition-all duration-300
-                    ${step >= etapa.id
+                    ${
+                      step >= etapa.id
                         ? "bg-content-primary border-content-primary text-black"
                         : "border-gray-500 text-gray-500"
-                      }`}
+                    }`}
                   >
                     {step > etapa.id ? "✓" : etapa.id}
                   </div>
                   <span
-                    className={`text-xs ${step === etapa.id
-                      ? "text-white font-semibold"
-                      : "text-gray-400"
-                      }`}
+                    className={`text-xs ${
+                      step === etapa.id
+                        ? "text-white font-semibold"
+                        : "text-gray-400"
+                    }`}
                   >
                     {etapa.label}
                   </span>
                   <div
                     className="w-16 h-0.5 bg-gray-500 mt-2"
                     style={{
-                      backgroundColor:
-                        step > etapa.id ? "#22c55e" : "#6b7280",
+                      backgroundColor: step > etapa.id ? "#22c55e" : "#6b7280",
                     }}
                   />
                 </div>
@@ -359,49 +440,61 @@ export default function RoomDetailsModal({
                       type="date"
                       id="data"
                       value={selectedDate}
-                      min={new Date().toISOString().split("T")[0]}
+                      min={
+                        new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+                          .toISOString()
+                          .split("T")[0]
+                      }
+                      max={
+                        new Date(
+                          new Date().getTime() + 30 * 24 * 60 * 60 * 1000
+                        )
+                          .toISOString()
+                          .split("T")[0]
+                      }
                       onChange={(e) => setSelectedDate(e.target.value)}
                       className="bg-[#1E1E1E] border border-[#444] rounded-lg text-white p-2 w-full mb-4"
                     />
 
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
-                      {horariosDisponiveis.map((time) => {
-                        const selected = selectedSlots.includes(time);
+                      {horariosDisponiveis.map(({ horario, ativo }) => {
+                        const selected = selectedSlots.includes(horario);
+                        const clicavel =
+                          horariosClicaveis.includes(horario) && ativo;
+
                         return (
                           <button
-                            key={time}
-                            onClick={() => handleSlotClick(time)}
-                            className={`py-2 rounded-lg text-sm transition-colors ${selected
-                              ? "bg-content-primary text-black"
-                              : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
-                              }`}
+                            key={horario}
+                            onClick={() => clicavel && handleSlotClick(horario)}
+                            disabled={!clicavel}
+                            className={`py-2 rounded-lg text-sm transition-colors ${
+                              !clicavel
+                                ? "bg-[#444] text-gray-500 cursor-not-allowed"
+                                : selected
+                                ? "bg-content-primary text-black"
+                                : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
+                            }`}
                           >
-                            {time}
+                            {horario}
                           </button>
                         );
                       })}
                     </div>
 
-                    {range && selectedSlots.length > 1 && (
+                    {selectedSlots.length > 0 && (
                       <div className="2xl:mb-4">
                         <Text className="text-gray-300">
-                          Selecionado: {range.start} – {range.end} (
-                          {horasSelecionadas} h)
+                          Selecionado: {selectedSlots[0]} –{" "}
+                          {getProximoHorario(
+                            selectedSlots[selectedSlots.length - 1]
+                          )}{" "}
+                          ({horasSelecionadas} h)
                         </Text>
                         <Text className="text-content-primary text-lg font-semibold">
                           Total: R$ {total.toFixed(2)}
                         </Text>
                       </div>
                     )}
-
-                    {!range ||
-                      (selectedSlots.length <= 1 && (
-                        <div className="mb-4">
-                          <Text className="text-gray-300">
-                            Selecione um horário de inicio e fim acima.
-                          </Text>
-                        </div>
-                      ))}
 
                     {horariosDisponiveis.length === 0 && (
                       <div className="mb-4">
@@ -416,11 +509,11 @@ export default function RoomDetailsModal({
                       onClick={handleNext}
                       className="w-full"
                       style={
-                        selectedSlots.length < 2
+                        selectedSlots.length < 1
                           ? { opacity: 0.5, cursor: "not-allowed" }
                           : {}
                       }
-                      disabled={!range || selectedSlots.length < 2}
+                      disabled={selectedSlots.length < 1}
                     />
                   </div>
                 </div>
@@ -445,17 +538,25 @@ export default function RoomDetailsModal({
                       </Text>
 
                       <VStack className="2xl:gap-4 xl:gap-1">
-                        <Accordion title="Pix" isOpen={paymentMethod === "pix"} onToggle={() => {
-                          if (paymentMethod === "pix") return;
-                          setPaymentMethod("pix");
-                          handlePixCheckout();
-                        }} >
+                        <Accordion
+                          title="Pix"
+                          isOpen={paymentMethod === "pix"}
+                          onToggle={() => {
+                            if (paymentMethod === "pix") return;
+                            setPaymentMethod("pix");
+                            handlePixCheckout();
+                          }}
+                        >
                           {paymentMethod === "pix" && qrCode && (
                             <VStack className="justify-center items-center w-full gap-4">
                               <Text className="text-xl font-bold text-center text-white">
                                 Escaneie o QR Code para pagar
                               </Text>
-                              <img src={qrCode} alt="QR Code" className="w-32 h-32 self-center" />
+                              <img
+                                src={qrCode}
+                                alt="QR Code"
+                                className="w-32 h-32 self-center"
+                              />
                               <Text className="text-center text-gray-400 mt-2">
                                 Expira em: {formatarTempo(tempoRestante)}
                               </Text>
@@ -463,33 +564,41 @@ export default function RoomDetailsModal({
                           )}
                         </Accordion>
 
-                        <Accordion title="Cartão de Crédito" isOpen={paymentMethod === "credit"} onToggle={() => {
-                          setPaymentMethod("credit");
-                          setLoading(false);
-                          setQrCode(null);
-                        }}>
+                        <Accordion
+                          title="Cartão de Crédito"
+                          isOpen={paymentMethod === "credit"}
+                          onToggle={() => {
+                            setPaymentMethod("credit");
+                            setLoading(false);
+                            setQrCode(null);
+                          }}
+                        >
                           {paymentMethod === "credit" && (
                             <>
                               {!inserirNovoCartao ? (
                                 <VStack className="gap-3 w-full">
-                                  {cartoesSalvos.length > 0 && cartoesSalvos.map((cartao) => (
-                                    <div
-                                      key={cartao.id}
-                                      onClick={() => setCartaoSelecionado(cartao)}
-                                      className={`p-3 h-3/4 border rounded-lg cursor-pointer text-content-primary ${cartaoSelecionado?.id === cartao.id
-                                        ? "border-content-primary bg-[#2a2a2a]"
-                                        : "border-[#333] bg-[#1E1E1E]"
+                                  {cartoesSalvos.length > 0 &&
+                                    cartoesSalvos.map((cartao) => (
+                                      <div
+                                        key={cartao.id}
+                                        onClick={() =>
+                                          setCartaoSelecionado(cartao)
+                                        }
+                                        className={`p-3 h-3/4 border rounded-lg cursor-pointer text-content-primary ${
+                                          cartaoSelecionado?.id === cartao.id
+                                            ? "border-content-primary bg-[#2a2a2a]"
+                                            : "border-[#333] bg-[#1E1E1E]"
                                         }`}
-                                    >
-                                      <Text className="font-semibold">
-                                        {cartao.bandeira.toUpperCase()} — Terminado em{" "}
-                                        {cartao.ultimosDigitos}
-                                      </Text>
-                                      <Text className="text-sm text-gray-400">
-                                        Expira em: {cartao.validade}
-                                      </Text>
-                                    </div>
-                                  ))}
+                                      >
+                                        <Text className="font-semibold">
+                                          {cartao.bandeira.toUpperCase()} —
+                                          Terminado em {cartao.ultimosDigitos}
+                                        </Text>
+                                        <Text className="text-sm text-gray-400">
+                                          Expira em: {cartao.validade}
+                                        </Text>
+                                      </div>
+                                    ))}
                                   {cartoesSalvos.length === 0 && (
                                     <Card className="w-full p-2 rounded-lg border border-[#333] bg-[#1E1E1E]">
                                       <Text className="text-content-primary text-lg font-semibold">
@@ -517,12 +626,22 @@ export default function RoomDetailsModal({
                                       placeholder="Número do cartão"
                                       className="p-2 rounded bg-[#2a2a2a] text-white"
                                       value={novoCartao.numero}
-                                      onChange={(e) =>
+                                      onChange={(e) => {
+                                        const raw = e.target.value.replace(
+                                          /\D/g,
+                                          ""
+                                        );
+                                        if (raw.length > 16) return;
+
+                                        const formatted = raw
+                                          .replace(/(.{4})/g, "$1 ")
+                                          .trim();
                                         setNovoCartao({
                                           ...novoCartao,
-                                          numero: e.target.value,
-                                        })
-                                      }
+                                          numero: formatted,
+                                        });
+                                        setBandeira(detectarBandeira(raw));
+                                      }}
                                     />
                                     <InputText
                                       id="nome"
@@ -583,18 +702,21 @@ export default function RoomDetailsModal({
                         </Accordion>
                       </VStack>
                     </div>
-
-
                   </VStack>
 
                   <Card className="p-6 text-white w-1/3 xl:min-h-[70vh] 2xl:min-h-[50vh] max-h-[70vh]">
-                    <Text className="text-xl font-bold mb-6">Resumo da Reserva</Text>
+                    <Text className="text-xl font-bold mb-6">
+                      Resumo da Reserva
+                    </Text>
                     <VStack className="gap-4">
-                      <Text>Sala {room.numero} ({room.andar}º Andar)</Text>
+                      <Text>
+                        Sala {room.numero} ({room.andar}º Andar)
+                      </Text>
                       <Text>Data: {selectedDate}</Text>
                       <Text>
-                        Horário: {range?.start} – {range?.end} ({horasSelecionadas}
-                        h)
+                        {selectedSlots.length > 0
+                          ? ` ${selectedSlots.join(", ")}`
+                          : " Nenhum"}
                       </Text>
                       <Text>Valor/hora: R$ {room.valorHora}</Text>
                       <Divider direction="horizontal" thickness="4px" />
@@ -605,14 +727,18 @@ export default function RoomDetailsModal({
                       <Button
                         title="Confirmar"
                         onClick={handlePagamento}
-                        style={!paymentMethod ||
-                          (paymentMethod === "pix") ||
+                        style={
+                          !paymentMethod ||
+                          paymentMethod === "pix" ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
-                            !novoCartao.numero) ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+                            !novoCartao.numero)
+                            ? { opacity: 0.5, cursor: "not-allowed" }
+                            : {}
+                        }
                         disabled={
                           !paymentMethod ||
-                          (paymentMethod === "pix") ||
+                          paymentMethod === "pix" ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
                             !checkCartaoFields())

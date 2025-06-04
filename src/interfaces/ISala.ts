@@ -1,4 +1,6 @@
-interface ISala {
+import { IHorarioResponse } from "./IHorario";
+
+export interface ISala {
   id: number;
   nome: string;
   numero: number;
@@ -18,10 +20,5 @@ interface ISala {
     imagemBase64: string;
     ordem: number;
   }[];
-  disponibilidades: {
-    id: number;
-    diaDaSemana: number;
-    horarioInicio: string;
-    horarioFim: string;
-  }
+  disponibilidades: IHorarioResponse[];
 }
