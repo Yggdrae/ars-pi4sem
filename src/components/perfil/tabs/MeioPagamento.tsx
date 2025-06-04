@@ -72,7 +72,7 @@ export const MeioPagamento = ({
           className="text-sm text-red-500 hover:text-red-400 cursor-pointer"
         >
           {loading ? (
-            <Spinner className="bg-[#E5D3B3]" />
+            <Spinner className="border-[#E5D3B3]" />
           ) : (
             <HStack className="gap-1 items-center">
               <FaTimes className="text-red-500" />

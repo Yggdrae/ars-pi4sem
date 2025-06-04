@@ -7,11 +7,7 @@ import Card from "./Card";
 import { Text } from "./Text";
 import ImageCarousel from "./CarrosselSalas";
 import { useHorarios } from "@/hooks/useHorarios";
-import {
-  IHorario,
-  IHorarioResponse,
-  IHorariosMap,
-} from "@/interfaces/IHorario";
+import { IHorario, IHorarioResponse } from "@/interfaces/IHorario";
 import Button from "./Button";
 import { getRecursoIcon } from "@/utils/recursosIcons";
 import { useCartao } from "@/hooks/useCartao";
@@ -24,6 +20,7 @@ import { Divider } from "./Divider";
 import { useToast } from "@/context/ToastContext";
 import { useReserva } from "@/hooks/useReserva";
 import { ISala } from "@/interfaces/ISala";
+import { Spinner } from "./Spinner";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -143,6 +140,18 @@ export default function RoomDetailsModal({
     );
   }, [room, selectedDate]);
 
+  useEffect(() => {
+    if (qrCode && tempoRestante > 0) {
+      const interval = setInterval(() => {
+        setTempoRestante((t) => t - 1);
+        if (tempoRestante === 292) {
+          handlePagamentoPix();
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [qrCode, tempoRestante]);
+
   const horariosClicaveis = useMemo(() => {
     if (selectedSlots.length === 0) {
       return horariosDisponiveis.map((h) => h.horario);
@@ -179,22 +188,20 @@ export default function RoomDetailsModal({
 
   const handlePixCheckout = () => {
     setLoadingPixMethod(true);
-    setTempoRestante(300);
 
-    delay(500);
-    setQrCode(
-      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PagamentoPix12345"
-    );
+    setTimeout(() => {
+      setQrCode(
+        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${JSON.stringify(
+          {
+            valor: total,
+            horarios: selectedSlots,
+            email: "emaildepagamento@email.com",
+          }
+        )}`
+      );
+      setTempoRestante(300);
+    }, 1500);
     setLoadingPixMethod(false);
-    delay(8000);
-    console.log(qrCode);
-    if (!qrCode) return;
-    setLoading(true);
-
-    delay(2000);
-    if (!qrCode) return;
-    setLoading(false);
-    setStep(3);
   };
 
   const handleClose = () => {
@@ -206,16 +213,23 @@ export default function RoomDetailsModal({
   };
 
   const handleNext = () => {
-    if (step === 1 && selectedSlots.length > 1) setStep(2);
+    if (step === 1 && selectedSlots.length >= 1) setStep(2);
     else if (
       step === 2 &&
       (paymentMethod === "pix" || cartaoSelecionado || novoCartao.numero)
-    )
+    ) {
       setStep(3);
+      setQrCode(null);
+      setPaymentMethod(null);
+    }
   };
 
   const handleBack = () => {
-    if (step > 1) setStep((prev) => (prev - 1) as 1 | 2 | 3);
+    if (step > 1) {
+      setStep((prev) => (prev - 1) as 1 | 2 | 3);
+      setQrCode(null);
+      setPaymentMethod(null);
+    }
   };
 
   const checkCartaoFields = () => {
@@ -327,6 +341,30 @@ export default function RoomDetailsModal({
           setLoading(false);
         });
     }, 2000);
+  };
+
+  const handlePagamentoPix = async () => {
+    setLoading(true);
+    await createReserva({
+      sala: room.id,
+      usuario: userData!.id,
+      diaHoraInicio: `${selectedDate} ${selectedSlots[0]}`,
+      diaHoraFim: `${selectedDate} ${getProximoHorario(
+        selectedSlots[selectedSlots.length - 1]
+      )}`,
+      status: "Confirmada",
+      valorHoraNaReserva: total,
+    })
+      .then(() => {
+        showToast("Reserva realizada com sucesso.", "success");
+        handleNext();
+      })
+      .catch(() => {
+        showToast("Erro ao realizar reserva.", "error");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   if (!isOpen) return null;
@@ -455,6 +493,12 @@ export default function RoomDetailsModal({
                       onChange={(e) => setSelectedDate(e.target.value)}
                       className="bg-[#1E1E1E] border border-[#444] rounded-lg text-white p-2 w-full mb-4"
                     />
+                    {horariosDisponiveis.length > 0 && (
+                      <Text className="text-gray-300 mb-4 animate-pulse">
+                        Selecione um ou mais horários disponíveis para a data
+                        escolhida.
+                      </Text>
+                    )}
 
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
                       {horariosDisponiveis.map(({ horario, ativo }) => {
@@ -467,7 +511,7 @@ export default function RoomDetailsModal({
                             key={horario}
                             onClick={() => clicavel && handleSlotClick(horario)}
                             disabled={!clicavel}
-                            className={`py-2 rounded-lg text-sm transition-colors ${
+                            className={`py-2 rounded-lg text-xs transition-colors ${
                               !clicavel
                                 ? "bg-[#444] text-gray-500 cursor-not-allowed"
                                 : selected
@@ -475,7 +519,7 @@ export default function RoomDetailsModal({
                                 : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
                             }`}
                           >
-                            {horario}
+                            {`${horario} – ${getProximoHorario(horario)}`}
                           </button>
                         );
                       })}
@@ -547,16 +591,21 @@ export default function RoomDetailsModal({
                             handlePixCheckout();
                           }}
                         >
-                          {paymentMethod === "pix" && qrCode && (
+                          {paymentMethod === "pix" && (
                             <VStack className="justify-center items-center w-full gap-4">
                               <Text className="text-xl font-bold text-center text-white">
                                 Escaneie o QR Code para pagar
                               </Text>
-                              <img
-                                src={qrCode}
-                                alt="QR Code"
-                                className="w-32 h-32 self-center"
-                              />
+                              {!qrCode && (
+                                <Spinner className="self-center border-content-primary" />
+                              )}
+                              {qrCode && (
+                                <img
+                                  src={qrCode}
+                                  alt="QR Code"
+                                  className="w-32 h-32 self-center"
+                                />
+                              )}
                               <Text className="text-center text-gray-400 mt-2">
                                 Expira em: {formatarTempo(tempoRestante)}
                               </Text>
@@ -761,9 +810,17 @@ export default function RoomDetailsModal({
                 variants={variants}
                 transition={{ duration: 0.5 }}
               >
-                <Text className="text-center text-content-primary font-bold text-xl">
-                  Reserva confirmada com sucesso!
-                </Text>
+                <VStack className="justify-center items-center h-full" gap={4}>
+                  <Text className="text-center text-content-primary font-bold text-xl">
+                    Reserva confirmada com sucesso!
+                  </Text>
+                  <Button
+                    title="Fechar"
+                    onClick={onClose}
+                    className="w-fit"
+                    variant="outline"
+                  />
+                </VStack>
               </motion.div>
             )}
           </AnimatePresence>
