@@ -40,7 +40,7 @@ export default function RoomCreateModal({
   const [valorHora, setValorHora] = useState("");
   const [capacidade, setCapacidade] = useState("");
 
-  const [imagens, setImagens] = useState<File[]>([]);
+  const [imagens, setImagens] = useState<{id: string; file: File}[]>([]);
   const [recursosSelecionados, setRecursosSelecionados] = useState<number[]>(
     []
   );
@@ -72,12 +72,16 @@ export default function RoomCreateModal({
 
     let horariosFilled = 0;
     horarios.map((horario) => {
-      if (horario.horarioInicio !== "" && horario.horarioFim !== "") horariosFilled += 1;
+      if (horario.horarioInicio !== "" && horario.horarioFim !== "")
+        horariosFilled += 1;
     });
-    
-    if(imagens.length === 0) showToast("Faça upload de ao menos uma imagem", "error");
-    if(horariosFilled === 0) showToast("Preencha ao menos um horário", "error");
-    if(notFilled.length > 0) showToast(`Preencha todos detalhes da sala`, "error");
+
+    if (imagens.length === 0)
+      showToast("Faça upload de ao menos uma imagem", "error");
+    if (horariosFilled === 0)
+      showToast("Preencha ao menos um horário", "error");
+    if (notFilled.length > 0)
+      showToast(`Preencha todos detalhes da sala`, "error");
 
     return notFilled.length === 0 && horariosFilled > 0;
   };
@@ -97,9 +101,15 @@ export default function RoomCreateModal({
           capacidade,
         });
 
-        for (const img of imagens) {
-          await uploadImagem({ salaId: novaSala.id, imagem: img });
-        }
+        await Promise.all(
+          imagens.map(async (img, index) => {
+            await uploadImagem({
+              salaId: novaSala.id,
+              imagem: img.file,
+              ordem: index + 1,
+            });
+          })
+        );
 
         for (const recursoId of recursosSelecionados) {
           await addRecursoSala({
@@ -110,7 +120,7 @@ export default function RoomCreateModal({
         }
 
         for (const horario of horarios) {
-          if(horario.horarioInicio !== "" && horario.horarioFim !== "") {
+          if (horario.horarioInicio !== "" && horario.horarioFim !== "") {
             await criaHorarioSala({
               salaId: novaSala.id,
               diaDaSemana: horario.diaDaSemana,

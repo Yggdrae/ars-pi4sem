@@ -13,6 +13,7 @@ import { useToast } from "@/context/ToastContext";
 import { RoomTabHorarios } from "./tabs/RoomTabHorarios";
 import { IHorarioPayload } from "@/interfaces/IHorario";
 import { useHorarios } from "@/hooks/useHorarios";
+import { ISala } from "@/interfaces/ISala";
 
 interface RoomEditModalProps {
   salaId: number;
@@ -38,6 +39,7 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
   } = useSalas();
   const { updateHorariosSala } = useHorarios();
   const { getRecursos } = useRecursos();
+  const { uploadImagem } = useSalas();
   const { showToast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -91,19 +93,22 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
 
     let horariosFilled = 0;
     horarios.map((horario) => {
-      if (horario.horarioInicio !== "" && horario.horarioFim !== "") horariosFilled += 1;
+      if (horario.horarioInicio !== "" && horario.horarioFim !== "")
+        horariosFilled += 1;
     });
 
-    if(horariosFilled === 0) showToast("Preencha ao menos um horário", "error");
-    if(notFilled.length > 0) showToast(`Preencha todos detalhes da sala`, "error");
+    if (horariosFilled === 0)
+      showToast("Preencha ao menos um horário", "error");
+    if (notFilled.length > 0)
+      showToast(`Preencha todos detalhes da sala`, "error");
 
     return notFilled.length === 0 && horariosFilled > 0;
   };
 
   const handleSalvar = async () => {
     const isValid = checkFields();
-    if(!isValid) return;
-    
+    if (!isValid) return;
+
     if (!sala) return;
     setIsLoading(true);
     try {
@@ -114,9 +119,31 @@ export default function RoomEditModal({ salaId, onClose }: RoomEditModalProps) {
         capacidade: String(sala.capacidade),
       });
 
+      let newImagesId: { mockedId: number; realId: number }[] = [];
+      await Promise.all(
+        imagensReordenadas.map(async (img, index) => {
+          if (img.id < 0) {
+            const res = await uploadImagem({
+              salaId: sala.id,
+              imagem: img.file,
+              ordem: index + 1,
+            });
+            newImagesId.push({ mockedId: img.id, realId: res.id });
+          }
+        })
+      );
+
+      const atualizadas = [...imagensReordenadas];
+      for (const img of newImagesId) {
+        const index = atualizadas.findIndex((i) => i.id === img.mockedId);
+        if (index !== -1) {
+          atualizadas[index].id = img.realId;
+        }
+      }
+
       await reorderImagens({
         salaId: sala.id,
-        ids: imagensReordenadas.map((img) => img.id),
+        ids: atualizadas.map((img) => img.id),
       });
 
       const recursosAtuais = sala.salasRecursos.map((r) => r.recurso.id);
