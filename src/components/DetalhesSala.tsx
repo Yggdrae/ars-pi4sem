@@ -516,8 +516,8 @@ export default function RoomDetailsModal({
                               !clicavel
                                 ? "bg-[#444] text-gray-500 cursor-not-allowed"
                                 : selected
-                                ? "bg-content-primary text-black"
-                                : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
+                                ? "bg-content-primary text-black cursor-pointer"
+                                : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] cursor-pointer"
                             }`}
                           >
                             {`${horario} – ${getProximoHorario(horario)}`}

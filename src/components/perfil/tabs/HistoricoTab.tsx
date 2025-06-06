@@ -82,6 +82,19 @@ export const HistoricoTab = () => {
     fetchHistorico();
   }, []);
 
+  const verificaHora = (reserva: IReserva) => {
+    const diaHoraDeHoje = new Date().getTime();
+    const dataReserva = new Date(reserva.diaHoraInicio).getTime();
+
+    const hour = 1000 * 60 * 60;
+
+    if(dataReserva - diaHoraDeHoje < hour) {
+      showToast("Reserva deve ser cancelada com no minimo 1 hora de antecedência", "error");
+      return false;
+    }
+    return true;
+  }
+
   const actions = [
     {
       label: (
@@ -114,6 +127,7 @@ export const HistoricoTab = () => {
           );
           return;
         }
+        if(!verificaHora(reserva!)) return;
         setReservaSelecionada(reserva ? reserva : undefined);
         setModalTipo("cancelar");
       },
