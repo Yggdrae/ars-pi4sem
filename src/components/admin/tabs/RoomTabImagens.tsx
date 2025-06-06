@@ -106,10 +106,10 @@ export function RoomTabImagens({
     }
 
     if (isCreating && setImagens) {
-      const oldIndex = Number(active.id);
-      const newIndex = Number(over.id);
+      const oldIndex = imagens.findIndex((img) => img.id === active.id);
+      const newIndex = imagens.findIndex((img) => img.id === over.id);
 
-      if (isNaN(oldIndex) || isNaN(newIndex)) return;
+      if (oldIndex === -1 || newIndex === -1) return;
 
       const reordered = arrayMove(imagens, oldIndex, newIndex);
       setImagens(reordered);
@@ -148,16 +148,14 @@ export function RoomTabImagens({
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={imagensParaExibir.map((img, idx) =>
-              isCreating ? idx : (img as SalaImagem).id
-            )}
+            items={imagens.map((img) => img.id)}
             strategy={verticalListSortingStrategy}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {imagensParaExibir.map((img, i) => (
                 <SortableImage
-                  key={isCreating ? i : (img as SalaImagem).id}
-                  id={isCreating ? i : (img as SalaImagem).id}
+                  key={img.id}
+                  id={img.id}
                   src={
                     isCreating
                       ? URL.createObjectURL(img.file as File)

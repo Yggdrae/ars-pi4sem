@@ -13,6 +13,7 @@ import { useToast } from "@/context/ToastContext";
 import Button from "@/components/Button";
 import { RoomTabHorarios } from "./tabs/RoomTabHorarios";
 import { useHorarios } from "@/hooks/useHorarios";
+import { img } from "framer-motion/client";
 
 const tabs = [
   { label: "Detalhes", key: "detalhes", icon: FaEdit },
@@ -40,7 +41,7 @@ export default function RoomCreateModal({
   const [valorHora, setValorHora] = useState("");
   const [capacidade, setCapacidade] = useState("");
 
-  const [imagens, setImagens] = useState<{id: string; file: File}[]>([]);
+  const [imagens, setImagens] = useState<{ id: string; file: File }[]>([]);
   const [recursosSelecionados, setRecursosSelecionados] = useState<number[]>(
     []
   );

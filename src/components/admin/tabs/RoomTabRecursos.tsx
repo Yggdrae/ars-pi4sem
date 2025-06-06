@@ -87,7 +87,6 @@ export function RoomTabRecursos({
           <div
             key={r.id}
             className="relative px-3 py-1 bg-gray-700 text-white rounded-full group cursor-pointer"
-            onClick={() => console.log(r)}
           >
             {!isCreating ? r.recurso.nome : r.nome}
             <button
