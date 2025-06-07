@@ -88,12 +88,15 @@ export const HistoricoTab = () => {
 
     const hour = 1000 * 60 * 60;
 
-    if(dataReserva - diaHoraDeHoje < hour) {
-      showToast("Reserva deve ser cancelada com no minimo 1 hora de antecedência", "error");
+    if (dataReserva - diaHoraDeHoje < hour) {
+      showToast(
+        "Reserva deve ser cancelada com no minimo 1 hora de antecedência",
+        "error"
+      );
       return false;
     }
     return true;
-  }
+  };
 
   const actions = [
     {
@@ -121,13 +124,10 @@ export const HistoricoTab = () => {
           if (reserva.id === row.id) return reserva;
         });
         if (reserva && reserva!.status === "Cancelada") {
-          showToast(
-            "Reserva já foi cancelada",
-            "error",
-          );
+          showToast("Reserva já foi cancelada", "error");
           return;
         }
-        if(!verificaHora(reserva!)) return;
+        if (!verificaHora(reserva!)) return;
         setReservaSelecionada(reserva ? reserva : undefined);
         setModalTipo("cancelar");
       },
@@ -186,7 +186,13 @@ export const HistoricoTab = () => {
 
   return (
     <VStack className="gap-8 mt-6">
-      <FlexTable data={historico} columns={colunas} actions={actions} />
+      {historico.length > 0 && (
+        <FlexTable data={historico} columns={colunas} actions={actions} />
+      )}
+
+      {historico.length === 0 && (
+        <Text className="text-center text-content-ternary">Nenhuma reserva encontrada</Text>
+      )}
 
       <Modal
         isOpen={modalTipo !== undefined && reservaSelecionada !== undefined}
@@ -241,7 +247,8 @@ export const HistoricoTab = () => {
             </Text>
             {reservaSelecionada.status === "Cancelada" && (
               <Text>
-                <strong>Motivo Cancelamento:</strong> {reservaSelecionada.motivoCancelamento}
+                <strong>Motivo Cancelamento:</strong>{" "}
+                {reservaSelecionada.motivoCancelamento}
               </Text>
             )}
             {modalTipo === "cancelar" && (

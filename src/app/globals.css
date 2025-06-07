@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --font-family-heading: var(--font-cinzel), serif;
+  /* Font Families */
+  --font-family-heading: "Arial", sans-serif;
+  --font-family-text: "Roboto Flex", sans-serif;
+  --font-family-mono: "Fira Code", monospace;
+
+  --font-family-heading: var(--font-playfair-display), serif;
   --font-family-text: var(--font-inter), sans-serif;
 
   /* Placeholder Colors */
@@ -132,11 +137,6 @@
 
   /* Font Sizes */
   --font-size-2xs: 0.625rem;
-
-  /* Font Families */
-  --font-family-heading: "Arial", sans-serif;
-  --font-family-text: "Roboto Flex", sans-serif;
-  --font-family-mono: "Fira Code", monospace;
 
   /* Box Shadows */
   --shadow-raise-default: 0 14px 26px -12px rgba(223, 223, 223, 42%),

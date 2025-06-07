@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Cinzel } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/authContext";
 import { ToastProvider } from "@/context/ToastContext";
@@ -14,10 +14,10 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const cinzel = Cinzel({
+const cinzel = Playfair_Display({
   subsets: ["latin"],
   weight: ["700", "800"],
-  variable: "--font-cinzel",
+  variable: "--font-playfair-display",
 });
 
 export default function RootLayout({

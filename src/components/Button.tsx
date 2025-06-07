@@ -37,9 +37,10 @@ const Button = ({
   };
 
   const sizeStyles = {
-    sm: "py-2 px-4 text-sm",
-    md: "py-3 px-6 text-base",
-    lg: "py-4 px-8 text-lg",
+    sm: "h-[32px] px-3 text-[14px]",
+    md: "h-[40px] px-4 text-[16px]",
+    lg: "h-[48px] px-5 text-[18px]",
+    xl: "h-[56px] px-6 text-[16px]",
   };
 
   return (
