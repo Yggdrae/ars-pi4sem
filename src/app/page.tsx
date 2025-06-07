@@ -22,7 +22,7 @@ export default function Home() {
       setDestaques(destaques.sort((a: ISala, b: ISala) => a.numero - b.numero));
     };
     fetchDestaques();
-  })
+  }, [])
   return (
     <Layout>
       <Hero
@@ -73,7 +73,7 @@ export default function Home() {
           return (
             <DestaqueCard
               key={destaque.numero}
-              backgroundImage={destaque.salasImagens.length > 0 ? destaque.salasImagens[0].imagemBase64 : require("@/assets/destaque1.png")}
+              backgroundImage={destaque.salasImagens.length > 0 ? destaque.salasImagens[0].imagemBase64 : ""}
               backgroundAlt={`Imagem da sala ${destaque.numero}`}
               className="w-full sm:w-[48%] lg:w-[30%]"
               title={`Sala ${destaque.numero}`}

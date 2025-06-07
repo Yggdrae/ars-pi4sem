@@ -12,7 +12,7 @@ export function Footer({ children, ...props }: FooterProps) {
                 {/* Container de colunas com responsividade */}
                 <div className="flex flex-col lg:flex-row justify-between gap-y-8 w-full">
                     <VStack className="w-full lg:w-1/3 gap-2">
-                        <p className="text-content-primary text-[18px] font-family-heading">Golden Space</p>
+                        <p className="text-content-primary text-[18px] font-family-heading">Eldorado</p>
                         <p className="text-content-ternary text-[16px] font-family-heading">Soluções elegantes para suas reuniões corporativas.</p>
                     </VStack>
                     <VStack className="w-full lg:w-1/3 gap-2">
