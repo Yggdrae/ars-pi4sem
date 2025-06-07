@@ -26,7 +26,7 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
 
   const scrollThumbnails = (direction: "left" | "right") => {
     if (thumbsRef.current) {
-      const scrollAmount = 120; // ajustável
+      const scrollAmount = 120;
       thumbsRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
@@ -36,7 +36,6 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
 
   return (
     <div className="w-full">
-      {/* Imagem principal com aspecto fixo */}
       <div className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl mb-3 bg-black">
         <Image
           src={mainSrc}
@@ -62,12 +61,9 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
         )}
       </div>
 
-      {/* Miniaturas com setas */}
       {total > 1 && (
         <div className="relative w-full overflow-hidden mt-2">
-          {/* Container com setas e thumbnails dentro de espaço controlado */}
           <div className="relative flex items-center w-full">
-            {/* Botão esquerdo */}
             <button
               onClick={() => scrollThumbnails("left")}
               className="absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-black/60 via-black/30 to-transparent"
@@ -75,7 +71,6 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
               <FaAngleLeft color="white" />
             </button>
 
-            {/* Thumbnails scrolláveis com limite máximo de largura */}
             <div
               ref={thumbsRef}
               className="flex gap-2 overflow-hidden scrollbar-hide w-full px-8"
@@ -105,7 +100,6 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
               })}
             </div>
 
-            {/* Botão direito */}
             <button
               onClick={() => scrollThumbnails("right")}
               className="absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-black/60 via-black/30 to-transparent"

@@ -73,11 +73,11 @@ export default function Home() {
           return (
             <DestaqueCard
               key={destaque.numero}
-              backgroundImage={destaque.salasImagens.length > 0 ? destaque.salasImagens[0].imagemBase64 : ""}
+              backgroundImage={destaque.salasImagens[0].imagemBase64 && destaque.salasImagens[0].imagemBase64}
               backgroundAlt={`Imagem da sala ${destaque.numero}`}
               className="w-full sm:w-[48%] lg:w-[30%]"
               title={`Sala ${destaque.numero}`}
-              badges={destaque.salasRecursos.map((item) => item.recurso.nome)}
+              badges={destaque.salasRecursos}
               capacity={destaque.capacidade}
               hourValue={destaque.valorHora}
             />

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 @theme {
+  --font-family-heading: var(--font-cinzel), serif;
+  --font-family-text: var(--font-inter), sans-serif;
+
   /* Placeholder Colors */
   --placeholder-light: var(--placeholder-light);
   --placeholder-dark: var(--placeholder-dark);

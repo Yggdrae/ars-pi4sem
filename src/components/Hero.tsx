@@ -27,7 +27,6 @@ const Hero = ({
       className={`relative w-full ${className}`}
       style={{ height }}
     >
-      {/* Imagem de fundo */}
       <div className="absolute inset-0 z-0">
         <Image
           src={backgroundImage}
@@ -40,13 +39,11 @@ const Hero = ({
         />
       </div>
 
-      {/* Gradiente de overlay */}
       <div
         className="absolute inset-0 z-10 bg-gradient-to-r from-content-secondary to-transparent"
         style={{ opacity: overlayOpacity }}
       ></div>
 
-      {/* Conteúdo interno */}
       <div className="relative z-20 w-full h-full flex flex-col items-start justify-start px-6 sm:px-8 pt-16 sm:pt-24">
         {children}
       </div>

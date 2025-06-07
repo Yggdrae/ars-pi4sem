@@ -11,6 +11,7 @@ import { HStack } from "@/components/HStack";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import { useToast } from "@/context/ToastContext";
 import RoomCreateModal from "../RoomCreateModal";
+import { ISala } from "@/interfaces/ISala";
 
 export const SalasTab = () => {
   const { showToast } = useToast();
@@ -88,7 +89,7 @@ export const SalasTab = () => {
           salaId={salaId}
           onClose={async () => {
             setSalaId(null);
-            const updated = await getSalas(); // recarrega a lista
+            const updated = await getSalas();
             setSalas(updated);
           }}
         />

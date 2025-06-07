@@ -1,4 +1,3 @@
-// RoomCreateModal.tsx
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/Modal";
 import { VStack } from "@/components/VStack";

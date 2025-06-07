@@ -1,16 +1,21 @@
+'use client'
+import Button from "@/components/Button";
+import { Text } from "@/components/Text";
+
 export default function UnauthorizedPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 text-center">
-      <h1 className="text-4xl font-bold text-red-600 mb-4">Acesso negado</h1>
-      <p className="text-lg text-gray-700 mb-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-content-secondary px-4 text-center">
+      <Text className="text-4xl font-bold text-content-primary mb-4">
+        Acesso negado
+      </Text>
+      <Text className="text-lg text-content-ternary mb-8">
         Você não tem permissão para acessar esta página.
-      </p>
-      <a
-        href="/"
-        className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
-      >
-        Voltar para o início
-      </a>
+      </Text>
+      <Button
+        title="Voltar para o início"
+        className="px-6 py-3 bg-content-primary text-content-secondary rounded-lg shadow transition"
+        onClick={() => (window.location.href = "/")}
+      />
     </div>
   );
 }

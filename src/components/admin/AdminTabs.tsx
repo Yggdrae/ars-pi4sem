@@ -39,7 +39,6 @@ export const AdminTabs = ({ selectedTab, onSelectTab }: ProfileTabsProps) => {
 
       {selectedTab === "reservas" && <ReservasTab />}
       {selectedTab === "salas" && <SalasTab />}
-      {/* {selectedTab === "dashboard" && <DashboardTab />} */}
     </VStack>
   );
 };

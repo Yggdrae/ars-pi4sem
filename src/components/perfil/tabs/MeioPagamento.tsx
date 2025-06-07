@@ -40,11 +40,6 @@ export const MeioPagamento = ({
             <Text className="text-content-primary">
               Terminado em: {finalCartao}
             </Text>
-            {/* {padrao && (
-            <span className="text-xs bg-[#E5D3B3] text-[#1E1E1E] font-semibold px-2 py-1 rounded-md">
-              Padrão
-            </span>
-          )} */}
           </HStack>
           <Text className="text-sm text-content-ternary">
             Expira em: {validadeCartao}
@@ -53,14 +48,6 @@ export const MeioPagamento = ({
       </HStack>
 
       <HStack className="gap-4">
-        {/* {!padrao && (
-          <button
-            onClick={onDefinirPadrao}
-            className="text-sm text-content-ternary hover:text-content-primary cursor-pointer"
-          >
-            Definir como padrão
-          </button>
-        )} */}
         <button
           onClick={() => {
             setLoading(true);

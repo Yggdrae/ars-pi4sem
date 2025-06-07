@@ -10,7 +10,7 @@ interface DividerProps {
 export const Divider: React.FC<DividerProps> = ({
     direction = "horizontal",
     thickness,
-    color = "#4B5563", // Tailwind gray-600 padrão
+    color = "#4B5563",
     className = "",
 }) => {
     const isHorizontal = direction === "horizontal";

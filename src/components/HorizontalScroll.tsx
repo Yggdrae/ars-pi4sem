@@ -28,7 +28,7 @@ export const HorizontalScroll = ({
     (e: React.MouseEvent) => {
       if (!isDragging || !containerRef.current) return;
       const x = e.pageX - containerRef.current.offsetLeft;
-      const walk = (x - startX) * 1; // ajuste a velocidade com multiplicador
+      const walk = (x - startX) * 1;
       containerRef.current.scrollLeft = scrollLeft - walk;
     },
     [isDragging, startX, scrollLeft]
