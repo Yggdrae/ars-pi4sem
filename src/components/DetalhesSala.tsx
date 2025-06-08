@@ -42,9 +42,16 @@ export default function RoomDetailsModal({
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<
     { horario: string; ativo: boolean }[]
   >([]);
-  const [selectedDate, setSelectedDate] = useState<string>(
-    () => new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const yyyy = tomorrow.getFullYear();
+    const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const dd = String(tomorrow.getDate()).padStart(2, "0");
+
+    return `${yyyy}-${mm}-${dd}`;
+  });
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit" | null>(
     null
@@ -92,7 +99,11 @@ export default function RoomDetailsModal({
     setCartaoSelecionado(null);
     setSelectedSlots([]);
 
-    const diaDaSemana = new Date(selectedDate).getDay();
+    console.log(selectedDate);
+    const [year, month, day] = selectedDate.split("-").map(Number);
+    const localDate = new Date(year, month - 1, day); // new Date(a, b, c) usa fuso local
+    const diaDaSemana = localDate.getDay() + 1;
+    console.log(diaDaSemana)
     const disponibilidadesDoDia = room.disponibilidades?.filter(
       (d) => d.diaDaSemana === diaDaSemana
     );
