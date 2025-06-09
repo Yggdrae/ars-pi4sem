@@ -1,12 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { VStack } from "@/components/VStack";
-import Button from "@/components/Button";
-import { IHorarioPayload } from "@/interfaces/IHorario";
-import { useHorarios } from "@/hooks/useHorarios";
-import { HorarioAccordion } from "@/components/HorarioAccordion";
 import { Accordion } from "@/components/Accordion";
-import { InputField } from "@/components/InputField";
-import { InputText } from "@/components/InputText";
+import { FaTimes } from "react-icons/fa";
+import { useToast } from "@/context/ToastContext";
 
 interface IHorario {
   diaDaSemana: number;
@@ -32,6 +28,13 @@ const dias: Record<number, string> = {
   7: "Sábado",
 };
 
+const formatarHora = (hora: string) => {
+  if (!hora) return "";
+  const [h] = hora.split(":");
+  const hh = h.padStart(2, "0");
+  return `${hh}:00`;
+};
+
 export function RoomTabHorarios({
   salaId,
   horarios,
@@ -40,57 +43,117 @@ export function RoomTabHorarios({
   onClose,
 }: RoomTabHorariosProps) {
   const [openTab, setOpenTab] = useState(1);
+  const { showToast } = useToast();
 
-  const handleChangeHorarioInicio = (value: string) => {
-    if (horarios) {
-      const newHorarios = horarios.map((horario) => {
-        if (horario.diaDaSemana === openTab) {
-          return { ...horario, horarioInicio: value };
-        }
-        return horario;
-      });
-      setHorarios(newHorarios);
+  const handleChange = (dia: number, tipo: "inicio" | "fim", valor: string) => {
+    const horarioAtual = horarios!.find((h) => h.diaDaSemana === dia);
+    if (!horarioAtual) return;
+
+    const novoInicio = tipo === "inicio" ? valor : horarioAtual.horarioInicio;
+    const novoFim = tipo === "fim" ? valor : horarioAtual.horarioFim;
+
+    const toMinutos = (hora: string) => {
+      const [hh, mm] = hora.split(":").map(Number);
+      return hh * 60 + mm;
+    };
+
+    if (novoInicio && novoFim && toMinutos(novoFim) <= toMinutos(novoInicio)) {
+      showToast(
+        "O horário de fechamento deve ser posterior ao de abertura.",
+        "error"
+      );
+      return;
     }
+
+    const newHorarios = horarios!.map((h) => {
+      if (h.diaDaSemana === dia) {
+        return {
+          ...h,
+          [tipo === "inicio" ? "horarioInicio" : "horarioFim"]: valor,
+        };
+      }
+      return h;
+    });
+    setHorarios(newHorarios);
   };
 
-  const handleChangeHorarioFim = (value: string) => {
-    if (horarios) {
-      const newHorarios = horarios.map((horario) => {
-        if (horario.diaDaSemana === openTab) {
-          return { ...horario, horarioFim: value };
-        }
-        return horario;
-      });
-      setHorarios(newHorarios);
-    }
+  const handleRemove = () => {
+    const horarioDoDia = horarios!.find((h) => h.diaDaSemana === openTab);
+
+    if (!horarioDoDia) return;
+
+    const { horarioInicio, horarioFim } = horarioDoDia;
+
+    if (!horarioInicio && !horarioFim) return;
+
+    const novos = horarios!.map((h) =>
+      h.diaDaSemana === openTab
+        ? { ...h, horarioInicio: "", horarioFim: "" }
+        : h
+    );
+    showToast("Horário removido", "success");
+    setHorarios(novos);
   };
+
+  const opcoesHora = Array.from({ length: 24 }, (_, i) => {
+    const hora = i.toString().padStart(2, "0") + ":00";
+    return (
+      <option key={hora} value={hora}>
+        {hora}
+      </option>
+    );
+  });
 
   return (
     <VStack className="gap-4">
-      {horarios &&
-        horarios.map((horario) => (
-          <Accordion
-            key={horario.diaDaSemana}
-            title={dias[horario.diaDaSemana]}
-            isOpen={openTab === horario.diaDaSemana}
-            onToggle={() => setOpenTab(horario.diaDaSemana)}
+      {horarios?.map((horario) => (
+        <Accordion
+          key={horario.diaDaSemana}
+          title={dias[horario.diaDaSemana]}
+          isOpen={openTab === horario.diaDaSemana}
+          onToggle={() => setOpenTab(horario.diaDaSemana)}
+        >
+          <div className="flex flex-col gap-2 text-sm text-content-primary">
+            <label htmlFor={`inicio-${horario.diaDaSemana}`}>
+              Horário de Abertura
+            </label>
+            <select
+              id={`inicio-${horario.diaDaSemana}`}
+              value={formatarHora(horario.horarioInicio)}
+              onChange={(e) =>
+                handleChange(horario.diaDaSemana, "inicio", e.target.value)
+              }
+              className="rounded-lg border border-content-primary bg-content-secondary px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent transition"
+            >
+              <option value="">Selecione</option>
+              {opcoesHora}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-2 text-sm text-content-primary">
+            <label htmlFor={`fim-${horario.diaDaSemana}`}>
+              Horário de Encerramento
+            </label>
+            <select
+              id={`fim-${horario.diaDaSemana}`}
+              value={formatarHora(horario.horarioFim)}
+              onChange={(e) =>
+                handleChange(horario.diaDaSemana, "fim", e.target.value)
+              }
+              className="rounded-lg border border-content-primary bg-content-secondary px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent transition"
+            >
+              <option value="">Selecione</option>
+              {opcoesHora}
+            </select>
+          </div>
+          <button
+            onClick={handleRemove}
+            className="text-red-500 text-sm underline cursor-pointer"
           >
-            <InputText
-              id="inicio"
-              type="time"
-              label="Horário de Abertura"
-              onChange={(e) => handleChangeHorarioInicio(e.target.value)}
-              value={horario.horarioInicio}
-            />
-            <InputText
-              id="fim"
-              type="time"
-              label="Horário de Encerramento"
-              onChange={(e) => handleChangeHorarioFim(e.target.value)}
-              value={horario.horarioFim}
-            />
-          </Accordion>
-        ))}
+            <FaTimes />
+          </button>
+        </Accordion>
+      ))}
     </VStack>
   );
 }
