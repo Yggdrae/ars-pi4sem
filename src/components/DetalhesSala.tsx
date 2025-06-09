@@ -103,7 +103,7 @@ export default function RoomDetailsModal({
     const [year, month, day] = selectedDate.split("-").map(Number);
     const localDate = new Date(year, month - 1, day); // new Date(a, b, c) usa fuso local
     const diaDaSemana = localDate.getDay() + 1;
-    console.log(diaDaSemana)
+    console.log(diaDaSemana);
     const disponibilidadesDoDia = room.disponibilidades?.filter(
       (d) => d.diaDaSemana === diaDaSemana
     );
@@ -190,11 +190,26 @@ export default function RoomDetailsModal({
   const total = horasSelecionadas * precoHora;
 
   const handleSlotClick = (time: string) => {
-    setSelectedSlots((prev) =>
-      prev.includes(time)
-        ? prev.filter((t) => t !== time)
-        : [...prev, time].sort()
-    );
+    const index = selectedSlots.indexOf(time);
+
+    if (index !== -1) {
+      if (selectedSlots.length <= 1) {
+        setSelectedSlots([]);
+        return;
+      }
+
+      if (index !== 0 && index !== selectedSlots.length - 1) {
+        showToast("Desmarque os horários das pontas primeiro.", "info");
+        return;
+      }
+
+      const newSlots = [...selectedSlots];
+      newSlots.splice(index, 1);
+      setSelectedSlots(newSlots);
+    } else {
+      const newSlots = [...selectedSlots, time].sort();
+      setSelectedSlots(newSlots);
+    }
   };
 
   const handlePixCheckout = () => {
