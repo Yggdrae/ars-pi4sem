@@ -2,7 +2,6 @@ import { useRouter } from "next/navigation";
 import Button from "./Button";
 import { InputText } from "./InputText";
 import { Text } from "./Text";
-import { VStack } from "./VStack";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/authContext";

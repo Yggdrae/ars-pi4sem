@@ -73,6 +73,7 @@ export default function Home() {
           return (
             <DestaqueCard
               key={destaque.numero}
+              salaId={destaque.id}
               backgroundImage={destaque.salasImagens[0].imagemBase64 ? destaque.salasImagens[0].imagemBase64 : require("@/assets/conference-room.png")}
               backgroundAlt={`Imagem da sala ${destaque.numero}`}
               className="w-full sm:w-[48%] lg:w-[30%]"

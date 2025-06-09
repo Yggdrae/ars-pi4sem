@@ -5,11 +5,15 @@ import { HorizontalScroll } from "./HorizontalScroll";
 import { getRecursoIcon } from "@/utils/recursosIcons";
 import { HStack } from "./HStack";
 import { Text } from "./Text";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/authContext";
+import { useToast } from "@/context/ToastContext";
 
 interface DestaqueCardProps {
   backgroundImage: string | StaticImageData;
   backgroundAlt: string;
   title: string;
+  salaId: number;
   badges?: {
     id: number;
     recurso: {
@@ -30,6 +34,7 @@ export const DestaqueCard = ({
   backgroundImage,
   backgroundAlt,
   title,
+  salaId,
   badges = [],
   capacity,
   imagePosition = "center",
@@ -38,6 +43,24 @@ export const DestaqueCard = ({
   children,
   className = "",
 }: DestaqueCardProps) => {
+  const router = useRouter();
+  const { userData } = useAuth();
+  const { showToast } = useToast();
+
+  const handleClick = () => {
+    if (userData === null) {
+      localStorage.setItem("redirectAfterLogin", `/salas?id=${salaId}`);
+      showToast(
+        "Faça login para poder reservar uma sala",
+        "error"
+      );
+      router.push("/login");
+      return;
+    }
+    else
+      router.push(`/salas?id=${salaId}`);
+  }
+
   return (
     <div
       className={`flex flex-col overflow-hidden rounded-2xl bg-[#2A2A2A] text-[#FFFFFF] border border-content-primary/20 ${className}`}
@@ -83,13 +106,15 @@ export const DestaqueCard = ({
           {badges.map((r, i) => (
             <HStack
               key={i}
-              className="bg-[#2a2a2a] px-3 py-1 rounded-lg gap-2 items-center text-sm text-white inline-flex shrink-0"
+              className="bg-[#363636] px-3 py-1 rounded-lg gap-2 items-center text-sm text-white inline-flex shrink-0"
             >
               {getRecursoIcon(r.recurso.nome)}
               <Text>{r.recurso.nome}</Text>
             </HStack>
           ))}
         </HorizontalScroll>
+
+        <Button title="Reservar" onClick={() => handleClick()} />
 
         {children && <div className="mt-2">{children}</div>}
       </div>

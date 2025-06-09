@@ -10,6 +10,7 @@ import { useSalas } from "@/hooks/useSalas";
 import { ISala } from "@/interfaces/ISala";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function Salas() {
   const router = useRouter();
@@ -17,18 +18,32 @@ export default function Salas() {
   const { showToast } = useToast();
   const { getSalasFull } = useSalas();
   const [salas, setSalas] = useState([]);
+  const searchParams = useSearchParams();
+  const salaId = searchParams.get("id");
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalItem, setModalItem] = useState<any>();
+  const [filteredSalas, setFilteredSalas] = useState<any>(salas);
+
   useEffect(() => {
     const fetchSalas = async () => {
       const data = await getSalasFull();
       setSalas(data.sort((a: ISala, b: ISala) => a.numero - b.numero));
       setFilteredSalas(data.sort((a: ISala, b: ISala) => a.numero - b.numero));
     };
-    fetchSalas();
+    fetchSalas()
   }, []);
 
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [modalItem, setModalItem] = useState<any>();
-  const [filteredSalas, setFilteredSalas] = useState<any>(salas);
+  useEffect(() => {
+    if(salaId){
+      const sala = salas.find((sala: ISala) => sala.id == Number(salaId));
+      if(sala){
+        setModalItem(sala);
+        setModalIsOpen(true);
+      }
+    }
+  }, [salas])
+
 
   return (
     <Layout>
