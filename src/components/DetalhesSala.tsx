@@ -740,12 +740,23 @@ export default function RoomDetailsModal({
                                         placeholder="Validade"
                                         className="p-2 rounded bg-[#2a2a2a] text-white"
                                         value={novoCartao.validade}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                          let raw = e.target.value
+                                            .replace(/\D/g, "")
+                                            .slice(0, 4);
+
+                                          if (raw.length >= 3) {
+                                            raw =
+                                              raw.slice(0, 2) +
+                                              "/" +
+                                              raw.slice(2);
+                                          }
+
                                           setNovoCartao({
                                             ...novoCartao,
-                                            validade: e.target.value,
-                                          })
-                                        }
+                                            validade: raw,
+                                          });
+                                        }}
                                       />
                                       <InputText
                                         id="cvv"
@@ -754,12 +765,17 @@ export default function RoomDetailsModal({
                                         placeholder="CVV"
                                         className="p-2 rounded bg-[#2a2a2a] text-white"
                                         value={novoCartao.cvv}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                          const raw = e.target.value.replace(
+                                            /\D/g,
+                                            ""
+                                          );
+                                          const limited = raw.slice(0, 3);
                                           setNovoCartao({
                                             ...novoCartao,
-                                            cvv: e.target.value,
-                                          })
-                                        }
+                                            cvv: limited,
+                                          });
+                                        }}
                                       />
                                     </HStack>
                                   </VStack>

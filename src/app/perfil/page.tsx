@@ -11,7 +11,7 @@ export default function Perfil() {
     const initials: string = userData?.nome ? splittedName[0][0] + splittedName[splittedName.length - 1][0] : "";
 
     return (
-        <Layout>
+        <Layout disableFooter>
             <ProfileCard name={userData?.nome || "Carregando..."} email={userData?.email || "Carregando..."} initials={initials} selectedTab={selectedTab} onSelectTab={setSelectedTab} />
         </Layout>
     )

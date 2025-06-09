@@ -174,10 +174,10 @@ export const PagamentoTab = () => {
             label="Validade"
             value={validade}
             onChange={(e) => {
-              let raw = e.target.value.replace(/\D/g, "").slice(0, 4); // Máximo 4 dígitos numéricos
+              let raw = e.target.value.replace(/\D/g, "").slice(0, 4);
 
               if (raw.length >= 3) {
-                raw = raw.slice(0, 2) + "/" + raw.slice(2); // Insere barra após os 2 primeiros
+                raw = raw.slice(0, 2) + "/" + raw.slice(2);
               }
 
               setValidade(raw);
@@ -188,9 +188,14 @@ export const PagamentoTab = () => {
             id="cvv"
             label="Código de Segurança"
             value={cvv}
-            onChange={(e) => setCvv(e.target.value)}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, "");
+              const limited = raw.slice(0, 3);
+              setCvv(limited);
+            }}
             placeholder="CVV"
           />
+
           <InputText
             id="nome"
             label="Nome no Cartão"
