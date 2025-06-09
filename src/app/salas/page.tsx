@@ -77,7 +77,7 @@ export default function Salas() {
                 backgroundAlt={`Foto da sala ${sala.nome}`}
                 onClick={() => {
                   if (userData === null) {
-                    localStorage.setItem("redirectAfterLogin", `/salas`);
+                    localStorage.setItem("redirectAfterLogin", `/salas?id=${sala.id}`);
                     showToast(
                       "Faça login para poder reservar uma sala",
                       "error"
