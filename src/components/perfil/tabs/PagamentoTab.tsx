@@ -173,7 +173,15 @@ export const PagamentoTab = () => {
             id="validade"
             label="Validade"
             value={validade}
-            onChange={(e) => setValidade(e.target.value)}
+            onChange={(e) => {
+              let raw = e.target.value.replace(/\D/g, "").slice(0, 4); // Máximo 4 dígitos numéricos
+
+              if (raw.length >= 3) {
+                raw = raw.slice(0, 2) + "/" + raw.slice(2); // Insere barra após os 2 primeiros
+              }
+
+              setValidade(raw);
+            }}
             placeholder="MM/AA"
           />
           <InputText
