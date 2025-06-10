@@ -12,7 +12,7 @@ import { getRecursoIcon } from "@/utils/recursosIcons";
 import { useCartao } from "@/hooks/useCartao";
 import { useAuth } from "@/context/authContext";
 import { InputText } from "./InputText";
-import { ICartao } from "@/interfaces/ICartao";
+import { BandeiraCartao, ICartao } from "@/interfaces/ICartao";
 import { AnimatePresence, motion } from "framer-motion";
 import { Accordion } from "./Accordion";
 import { Divider } from "./Divider";
@@ -22,6 +22,13 @@ import { ISala } from "@/interfaces/ISala";
 import { Spinner } from "./Spinner";
 import { HorizontalScroll } from "./HorizontalScroll";
 import { CheckboxCell } from "./Checkbox";
+import { detectarBandeiraCompleta } from "@/utils/detectarBandeira";
+import { getPaymentIcon } from "@/utils/getPaymentIcon";
+import {
+  validarCvvCartao,
+  validarNomeCartao,
+  validarValidadeCartao,
+} from "@/utils/validateCartao";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -73,10 +80,6 @@ export default function RoomDetailsModal({
   });
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [salvarCartao, setSalvarCartao] = useState(false);
-
-  function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 
   const formatarTempo = (segundos: number) => {
     const min = Math.floor(segundos / 60)
@@ -260,30 +263,12 @@ export default function RoomDetailsModal({
 
   const checkCartaoFields = () => {
     return (
-      novoCartao.nome !== "" &&
-      novoCartao.numero !== "" &&
-      novoCartao.validade !== "" &&
-      novoCartao.cvv !== ""
+      novoCartao.nome === "" ||
+      novoCartao.numero === "" ||
+      novoCartao.validade === "" ||
+      novoCartao.cvv === ""
     );
   };
-
-  function detectarBandeira(
-    numero: string
-  ): "Elo" | "Mastercard" | "Visa" | "Desconhecida" {
-    const cleanNumero = numero.replace(/\D/g, "");
-
-    const regexes = {
-      Visa: /^4\d{0,15}$/,
-      Mastercard: /^(5[1-5]\d{0,14}|2[2-7]\d{0,14})$/,
-      Elo: /^(4011(78|79)|4312(74|75)|438935|451416|457393|457631|457632|504175|506699|509\d{3}|627780|636297|636368)\d*$/,
-    };
-
-    if (regexes.Visa.test(cleanNumero)) return "Visa";
-    if (regexes.Mastercard.test(cleanNumero)) return "Mastercard";
-    if (regexes.Elo.test(cleanNumero)) return "Elo";
-
-    return "Desconhecida";
-  }
 
   const handlePagamento = async () => {
     setLoading(true);
@@ -291,14 +276,30 @@ export default function RoomDetailsModal({
 
     setTimeout(async () => {
       if (inserirNovoCartao) {
-        if (!checkCartaoFields()) {
+        console.log("inside cartao");
+        if (checkCartaoFields()) {
           showToast("Preencha todos os campos.", "error");
           setLoading(false);
           return;
         }
-        const bandeiraCartao = detectarBandeira(novoCartao.numero);
-        if (bandeiraCartao === "Desconhecida") {
+        const bandeiraCartao = detectarBandeiraCompleta(novoCartao.numero);
+        if (bandeiraCartao === "") {
           showToast("Cartão desconhecido.", "error");
+          setLoading(false);
+          return;
+        }
+        if (!validarValidadeCartao(novoCartao.validade)) {
+          showToast("Data de validade vencida ou inválida.", "error");
+          setLoading(false);
+          return;
+        }
+        if (!validarCvvCartao(novoCartao.cvv)) {
+          showToast("CVV inválido.", "error");
+          setLoading(false);
+          return;
+        }
+        if (!validarNomeCartao(novoCartao.nome)) {
+          showToast("Nome do titular inválido.", "error");
           setLoading(false);
           return;
         }
@@ -368,7 +369,7 @@ export default function RoomDetailsModal({
         .finally(() => {
           setLoading(false);
         });
-    }, 2000);
+    }, 1000);
   };
 
   const handlePagamentoPix = async () => {
@@ -712,21 +713,26 @@ export default function RoomDetailsModal({
                                       placeholder="Número do cartão"
                                       className="p-2 rounded bg-[#2a2a2a] text-white"
                                       value={novoCartao.numero}
+                                      iconRight={getPaymentIcon(
+                                        bandeira as BandeiraCartao
+                                      )}
                                       onChange={(e) => {
                                         const raw = e.target.value.replace(
                                           /\D/g,
                                           ""
                                         );
-                                        if (raw.length > 16) return;
-
-                                        const formatted = raw
+                                        const limitedRaw = raw.slice(0, 19);
+                                        const formatted = limitedRaw
                                           .replace(/(.{4})/g, "$1 ")
                                           .trim();
+                                        1;
                                         setNovoCartao({
                                           ...novoCartao,
                                           numero: formatted,
                                         });
-                                        setBandeira(detectarBandeira(raw));
+                                        const novaBandeira =
+                                          detectarBandeiraCompleta(limitedRaw);
+                                        setBandeira(novaBandeira);
                                       }}
                                     />
                                     <InputText
@@ -790,7 +796,9 @@ export default function RoomDetailsModal({
                                       />
                                     </HStack>
                                     <HStack className="w-full items-center justify-end gap-2">
-                                      <Text className="text-content-primary">Salvar cartão?</Text>
+                                      <Text className="text-content-primary">
+                                        Salvar cartão?
+                                      </Text>
                                       <CheckboxCell
                                         checked={salvarCartao}
                                         onChange={() => handleSalvarCartao()}
@@ -834,14 +842,14 @@ export default function RoomDetailsModal({
                       </Text>
 
                       <Button
-                        title="Confirmar"
+                        title="Fazer Reserva"
                         onClick={handlePagamento}
                         style={
                           !paymentMethod ||
                           paymentMethod === "pix" ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
-                            !novoCartao.numero)
+                            checkCartaoFields())
                             ? { opacity: 0.5, cursor: "not-allowed" }
                             : {}
                         }
@@ -850,7 +858,7 @@ export default function RoomDetailsModal({
                           paymentMethod === "pix" ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
-                            !checkCartaoFields())
+                            checkCartaoFields())
                         }
                         loading={loading}
                       />

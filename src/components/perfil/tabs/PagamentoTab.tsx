@@ -6,14 +6,21 @@ import { HStack } from "@/components/HStack";
 import { Text } from "@/components/Text";
 import { VStack } from "@/components/VStack";
 import { MeioPagamento } from "./MeioPagamento";
-import { ICartao, IPostResponse } from "@/interfaces/ICartao";
+import { BandeiraCartao, ICartao, IPostResponse } from "@/interfaces/ICartao";
 import { useCartao } from "@/hooks/useCartao";
 import { useAuth } from "@/context/authContext";
 import { useToast } from "@/context/ToastContext";
 import { Modal } from "@/components/Modal";
 import { InputText } from "@/components/InputText";
-import { useForm } from "@/hooks/useForms";
+import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { FaPlus } from "react-icons/fa";
+import { detectarBandeiraCompleta } from "@/utils/detectarBandeira";
+import { getPaymentIcon } from "@/utils/getPaymentIcon";
+import {
+  validarCvvCartao,
+  validarNomeCartao,
+  validarValidadeCartao,
+} from "@/utils/validateCartao";
 
 interface IForm {
   numero: string;
@@ -46,37 +53,30 @@ export const PagamentoTab = () => {
     setMeiosPagamento(updated);
   };
 
-  const detectarBandeira = (
-    numero: string
-  ): "VISA" | "MASTERCARD" | "ELO" | "" => {
-    const n = numero.replace(/\D/g, "");
-
-    if (n.length !== 16) return "";
-
-    if (
-      /^(4011(78|79)|4312(74|75)|4389(35|36)|4514(16|17)|4576(31|32)|5041(75|76)|5067(01|02)|5090(41|42)|6277(80|81)|6362(97|98)|6363(68|69))[0-9]{10}$/.test(
-        n
-      )
-    ) {
-      return "ELO";
-    }
-
-    if (/^4[0-9]{15}$/.test(n)) return "VISA";
-
-    if (
-      /^5[1-5][0-9]{14}$/.test(n) ||
-      /^2(2[2-9][0-9]{12}|[3-6][0-9]{13}|7([01][0-9]{12}|20[0-9]{12}))$/.test(n)
-    ) {
-      return "MASTERCARD";
-    }
-
-    return "";
+  const checkCartaoFields = () => {
+    return nome === "" || numero === "" || validade === "" || cvv === "";
   };
 
   const handleAdicionarCartao = () => {
-    const novaBandeira = detectarBandeira(numero);
+    if (checkCartaoFields()) {
+      showToast("Preencha todos os campos.", "error");
+      return;
+    }
+    const novaBandeira = detectarBandeiraCompleta(numero);
     if (!novaBandeira) {
-      showToast("Número de cartão inválido ou não reconhecido.", "error");
+      showToast("Número de cartão: inválido ou não reconhecido.", "error");
+      return;
+    }
+    if (!validarValidadeCartao(validade)) {
+      showToast("Data de validade vencida ou inválida.", "error");
+      return;
+    }
+    if (!validarCvvCartao(cvv)) {
+      showToast("CVV inválido.", "error");
+      return;
+    }
+    if (!validarNomeCartao(nome)) {
+      showToast("Nome do titular inválido.", "error");
       return;
     }
 
@@ -166,16 +166,16 @@ export const PagamentoTab = () => {
             value={numero}
             onChange={(e) => {
               const raw = e.target.value.replace(/\D/g, "");
-
-              if (raw.length > 16) return;
-
-              const formatted = raw.replace(/(.{4})/g, "$1 ").trim();
-
+              const limitedRaw = raw.slice(0, 19);
+              const formatted = limitedRaw.replace(/(.{4})/g, "$1 ").trim();
               setNumero(formatted);
-              setBandeira(detectarBandeira(raw));
+              const novaBandeira = detectarBandeiraCompleta(limitedRaw);
+              setBandeira(novaBandeira);
             }}
             placeholder="Digite os números do cartão"
+            iconRight={getPaymentIcon(bandeira as BandeiraCartao)}
           />
+
           <InputText
             id="validade"
             label="Validade"
@@ -210,11 +210,6 @@ export const PagamentoTab = () => {
             onChange={(e) => setNome(e.target.value)}
             placeholder="Como aparece no cartão"
           />
-          {bandeira && (
-            <Text className="text-sm text-content-ternary">
-              Bandeira detectada: {bandeira}
-            </Text>
-          )}
         </VStack>
       </Modal>
 
