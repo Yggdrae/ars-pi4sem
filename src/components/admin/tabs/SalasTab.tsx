@@ -39,8 +39,18 @@ export const SalasTab = () => {
     { header: "Valor", accessor: "valorHora" },
   ];
 
-  const bool: { header: string; accessor: keyof ISala; editable: boolean, onClick?: (row: ISala) => void }[] = [
-    { header: "Destaque", accessor: "isDestaque", editable: true, onClick: (row: ISala) => handleDestaqueChange(row.id, row.isDestaque) },
+  const bool: {
+    header: string;
+    accessor: keyof ISala;
+    editable: boolean;
+    onClick?: (row: ISala) => void;
+  }[] = [
+    {
+      header: "Destaque",
+      accessor: "isDestaque",
+      editable: true,
+      onClick: (row: ISala) => handleDestaqueChange(row.id, row.isDestaque),
+    },
   ];
 
   const actions = [
@@ -84,26 +94,37 @@ export const SalasTab = () => {
     let destaqueCounter: number = 0;
     salas.map((sala) => sala.isDestaque && destaqueCounter++);
 
-    console.log(destaqueCounter)
+    console.log(destaqueCounter);
     if (destaqueCounter >= 5 && !isDestaque) {
       showToast("Destaque atingiu o limite de 5 salas.", "error");
       return;
-    }
-    else {
+    } else {
       changeDestaqueStatus(salaId, isDestaque)
-        .then((data) => {
+        .then(() => {
           showToast("Destaque alterado com sucesso!", "success");
+          const updated = salas.map((sala) => {
+            if (sala.id === salaId) {
+              return { ...sala, isDestaque: !sala.isDestaque };
+            }
+            return sala;
+          });
+          setSalas(updated);
         })
-        .catch((data) => {
-          console.log(data)
+        .catch(() => {
           showToast("Erro ao alterar destaque.", "error");
-        })
+        });
     }
-  }
+  };
 
   return (
     <VStack className="gap-8 mt-6">
-      <Button title="Adicionar Sala" leftIcon={<FaPlus />} size="md" className="w-fit place-self-end" onClick={() => setCreating(true)} />
+      <Button
+        title="Adicionar Sala"
+        leftIcon={<FaPlus />}
+        size="md"
+        className="w-fit place-self-end"
+        onClick={() => setCreating(true)}
+      />
       <FlexTable
         data={salas.sort((a, b) => a.numero - b.numero)}
         columns={colunas}
