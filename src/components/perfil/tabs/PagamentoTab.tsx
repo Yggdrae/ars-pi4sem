@@ -110,6 +110,13 @@ export const PagamentoTab = () => {
     }, 1500);
   };
 
+  const handleModalVisivel = () => {
+    if (meiosPagamento.length >= 3) {
+      showToast("Limite de cartões salvos atingido.", "error");
+      return;
+    } else setModalVisivel(true);
+  };
+
   useEffect(() => {
     const fetch = async () => {
       const cards = await getCartoes(userData!.id);
@@ -128,7 +135,7 @@ export const PagamentoTab = () => {
           title="Adicionar Cartão"
           variant="primary"
           className="w-fit"
-          onClick={() => setModalVisivel(true)}
+          onClick={() => handleModalVisivel()}
           leftIcon={<FaPlus />}
         />
       </HStack>

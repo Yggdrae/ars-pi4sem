@@ -21,6 +21,7 @@ import { useReserva } from "@/hooks/useReserva";
 import { ISala } from "@/interfaces/ISala";
 import { Spinner } from "./Spinner";
 import { HorizontalScroll } from "./HorizontalScroll";
+import { CheckboxCell } from "./Checkbox";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -71,6 +72,7 @@ export default function RoomDetailsModal({
     cvv: "",
   });
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  const [salvarCartao, setSalvarCartao] = useState(false);
 
   function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -301,27 +303,29 @@ export default function RoomDetailsModal({
           return;
         }
 
-        const cartaoCriado = await adicionarCartao({
-          numero: novoCartao.numero,
-          nomeTitular: novoCartao.nome,
-          validade: novoCartao.validade,
-          cvv: novoCartao.cvv,
-          bandeira: bandeira,
-          usuarioId: userData!.id,
-        })
-          .then((data) => {
-            cartaoId = data.id;
-            return data;
+        if (salvarCartao) {
+          const cartaoCriado = await adicionarCartao({
+            numero: novoCartao.numero,
+            nomeTitular: novoCartao.nome,
+            validade: novoCartao.validade,
+            cvv: novoCartao.cvv,
+            bandeira: bandeira,
+            usuarioId: userData!.id,
           })
-          .catch((data) => {
-            if (data.response.status === 409)
-              showToast("Cartão já cadastrado.", "error");
-            else showToast("Erro ao adicionar cartão.", "error");
-            setLoading(false);
-            return "";
-          });
+            .then((data) => {
+              cartaoId = data.id;
+              return data;
+            })
+            .catch((data) => {
+              if (data.response.status === 409)
+                showToast("Cartão já cadastrado.", "error");
+              else showToast("Erro ao adicionar cartão.", "error");
+              setLoading(false);
+              return "";
+            });
 
-        if (cartaoCriado === "") return;
+          if (cartaoCriado === "") return;
+        }
       }
 
       const pagamentoOk = await pagamento({
@@ -389,6 +393,15 @@ export default function RoomDetailsModal({
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleSalvarCartao = () => {
+    if (cartoesSalvos.length >= 3 && !salvarCartao) {
+      showToast("Limite de cartões salvos atingido.", "error");
+      return;
+    } else {
+      setSalvarCartao(!salvarCartao);
+    }
   };
 
   if (!isOpen) return null;
@@ -774,6 +787,13 @@ export default function RoomDetailsModal({
                                             cvv: limited,
                                           });
                                         }}
+                                      />
+                                    </HStack>
+                                    <HStack className="w-full items-center justify-end gap-2">
+                                      <Text className="text-content-primary">Salvar cartão?</Text>
+                                      <CheckboxCell
+                                        checked={salvarCartao}
+                                        onChange={() => handleSalvarCartao()}
                                       />
                                     </HStack>
                                   </VStack>
