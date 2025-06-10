@@ -93,14 +93,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider
       value={{ isLoggedIn, login, logout, userData, setUserData }}
     >
-      {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-content-secondary text-content-primary">
-          <Image src={require("@/assets/logo.png")} alt="Logo" width={300} height={300} />
-          <Spinner className="border-content-primary" />
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 };

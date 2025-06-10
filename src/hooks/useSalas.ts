@@ -88,6 +88,13 @@ export function useSalas() {
     return data;
   }, []);
 
+  const changeDestaqueStatus = useCallback(async (id: number, isDestaque: boolean) => {
+    const { data } = await api.put(`/salas/${id}`, {
+      isDestaque: !isDestaque
+    });
+    return data;
+  }, []);
+
   return {
     createSala,
     getSalas,
@@ -102,5 +109,6 @@ export function useSalas() {
     addRecursoSala,
     deleteSala,
     reorderImagens,
+    changeDestaqueStatus,
   };
 }

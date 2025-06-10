@@ -6,6 +6,7 @@ export interface ISala {
   numero: number;
   andar: string;
   capacidade: number;
+  isDestaque: boolean;
   valorHora: number;
   salasRecursos: {
     id: number;

@@ -99,11 +99,9 @@ export default function RoomDetailsModal({
     setCartaoSelecionado(null);
     setSelectedSlots([]);
 
-    console.log(selectedDate);
     const [year, month, day] = selectedDate.split("-").map(Number);
-    const localDate = new Date(year, month - 1, day); // new Date(a, b, c) usa fuso local
+    const localDate = new Date(year, month - 1, day);
     const diaDaSemana = localDate.getDay() + 1;
-    console.log(diaDaSemana);
     const disponibilidadesDoDia = room.disponibilidades?.filter(
       (d) => d.diaDaSemana === diaDaSemana
     );
