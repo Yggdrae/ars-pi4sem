@@ -22,13 +22,13 @@ export default function RoomHorariosModal({
   const [horariosPorDia, setHorariosPorDia] = useState<
     Record<number, { inicio: string; fim: string }>
   >({
-    1: { inicio: "08:00", fim: "14:00" }, // Domingo
-    2: { inicio: "08:00", fim: "18:00" }, // Segunda-feira
-    3: { inicio: "08:00", fim: "18:00" }, // Terça-feira
-    4: { inicio: "08:00", fim: "18:00" }, // Quarta-feira
-    5: { inicio: "08:00", fim: "18:00" }, // Quinta-feira
-    6: { inicio: "08:00", fim: "18:00" }, // Sexta-feira
-    7: { inicio: "08:00", fim: "14:00" }, // Sábado
+    1: { inicio: "08:00", fim: "14:00" },
+    2: { inicio: "08:00", fim: "18:00" },
+    3: { inicio: "08:00", fim: "18:00" },
+    4: { inicio: "08:00", fim: "18:00" },
+    5: { inicio: "08:00", fim: "18:00" },
+    6: { inicio: "08:00", fim: "18:00" },
+    7: { inicio: "08:00", fim: "14:00" },
   });
 
   const handleChangeHorario = (

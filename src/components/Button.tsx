@@ -25,7 +25,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "font-family-heading rounded-lg transition-colors duration-200 cursor-pointer inline-flex items-center justify-center gap-2";
+    "font-family-heading rounded-lg transition-colors duration-200 cursor-pointer inline-flex items-center justify-center gap-2 font-family-text";
 
   const variantStyles = {
     primary: "bg-[#E5D3B3] text-[#1E1E1E] hover:bg-[#d8c6a6]",
@@ -37,9 +37,10 @@ const Button = ({
   };
 
   const sizeStyles = {
-    sm: "py-2 px-4 text-sm",
-    md: "py-3 px-6 text-base",
-    lg: "py-4 px-8 text-lg",
+    sm: "h-[32px] px-3 text-[14px]",
+    md: "h-[40px] px-4 text-[16px]",
+    lg: "h-[48px] px-5 text-[18px]",
+    xl: "h-[56px] px-6 text-[16px]",
   };
 
   return (

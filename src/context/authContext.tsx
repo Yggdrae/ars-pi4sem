@@ -1,4 +1,3 @@
-// context/authContext.tsx
 "use client";
 import {
   createContext,
@@ -8,6 +7,8 @@ import {
   useEffect,
 } from "react";
 import axios from "axios";
+import { Spinner } from "@/components/Spinner";
+import Image from "next/image";
 
 type AuthContextType = {
   isLoggedIn: boolean;
@@ -53,12 +54,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/usuarios/${response.data.usuario.id}`,
           {
             withCredentials: true,
-          })
+          }
+        );
         setUserData({
           id: response.data.usuario.id,
           nome: userData.data.nome,
           email: userData.data.email,
-          tipo: response.data.usuario.tipo
+          tipo: response.data.usuario.tipo,
         });
         setIsLoggedIn(true);
       } else {
@@ -69,7 +71,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUserData(null);
       setIsLoggedIn(false);
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 1000);
     }
   };
 
@@ -91,7 +93,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider
       value={{ isLoggedIn, login, logout, userData, setUserData }}
     >
-      {loading ? <p>Carregando...</p> : children}
+      {children}
     </AuthContext.Provider>
   );
 };

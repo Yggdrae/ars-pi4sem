@@ -8,21 +8,19 @@ import Image from "next/image";
 export default function Login() {
   return (
     <Layout disableFooter>
-      <div className="min-h-[calc(100vh-192px)] flex items-center justify-center bg-content-secondary">
-        <Card className="w-full max-w-7xl flex overflow-hidden rounded-xl shadow-lg border border-[#333]">
-          <HStack className="w-full h-full flex-col lg:flex-row">
-            <Image
-              className="hidden lg:block w-2/3 h-full object-cover"
-              src={require("@/assets/conference-room.png")}
-              alt="Login Image"
-              priority
-            />
-            <div className="w-full lg:w-1/3 flex items-center justify-center p-6">
-              <LoginForm />
-            </div>
-          </HStack>
-        </Card>
-      </div>
+      <HStack className="w-full h-fit flex-col lg:flex-row items-center">
+        <div className="hidden lg:block w-full lg:w-3/5 h-full">
+          <Image
+            className="w-full h-full object-cover"
+            src={require("@/assets/conference-room.png")}
+            alt="Imagem de Cadastro"
+            priority
+          />
+        </div>
+        <div className="w-full lg:w-2/5 h-full flex items-center justify-center bg-content-secondary px-4 py-6">
+          <LoginForm className="w-full max-w-md" />
+        </div>
+      </HStack>
     </Layout>
   );
 }

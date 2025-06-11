@@ -11,10 +11,11 @@ import { HStack } from "@/components/HStack";
 import { FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import { useToast } from "@/context/ToastContext";
 import RoomCreateModal from "../RoomCreateModal";
+import { ISala } from "@/interfaces/ISala";
 
 export const SalasTab = () => {
   const { showToast } = useToast();
-  const { getSalas, deleteSala } = useSalas();
+  const { getSalas, deleteSala, changeDestaqueStatus } = useSalas();
   const [salas, setSalas] = useState<ISala[]>([]);
   const [creating, setCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +37,20 @@ export const SalasTab = () => {
     { header: "Número", accessor: "numero" },
     { header: "Andar", accessor: "andar" },
     { header: "Valor", accessor: "valorHora" },
+  ];
+
+  const bool: {
+    header: string;
+    accessor: keyof ISala;
+    editable: boolean;
+    onClick?: (row: ISala) => void;
+  }[] = [
+    {
+      header: "Destaque",
+      accessor: "isDestaque",
+      editable: true,
+      onClick: (row: ISala) => handleDestaqueChange(row.id, row.isDestaque),
+    },
   ];
 
   const actions = [
@@ -75,12 +90,45 @@ export const SalasTab = () => {
     }, 2000);
   };
 
+  const handleDestaqueChange = (salaId: number, isDestaque: boolean) => {
+    let destaqueCounter: number = 0;
+    salas.map((sala) => sala.isDestaque && destaqueCounter++);
+
+    console.log(destaqueCounter);
+    if (destaqueCounter >= 5 && !isDestaque) {
+      showToast("Destaque atingiu o limite de 5 salas.", "error");
+      return;
+    } else {
+      changeDestaqueStatus(salaId, isDestaque)
+        .then(() => {
+          showToast("Destaque alterado com sucesso!", "success");
+          const updated = salas.map((sala) => {
+            if (sala.id === salaId) {
+              return { ...sala, isDestaque: !sala.isDestaque };
+            }
+            return sala;
+          });
+          setSalas(updated);
+        })
+        .catch(() => {
+          showToast("Erro ao alterar destaque.", "error");
+        });
+    }
+  };
+
   return (
     <VStack className="gap-8 mt-6">
-      <Button title="Adicionar Sala" leftIcon={<FaPlus />} size="md" className="w-fit place-self-end" onClick={() => setCreating(true)} />
+      <Button
+        title="Adicionar Sala"
+        leftIcon={<FaPlus />}
+        size="md"
+        className="w-fit place-self-end"
+        onClick={() => setCreating(true)}
+      />
       <FlexTable
         data={salas.sort((a, b) => a.numero - b.numero)}
         columns={colunas}
+        boolValues={bool}
         actions={actions}
       />
       {salaId && tipoModal === "editar" && (
@@ -88,7 +136,7 @@ export const SalasTab = () => {
           salaId={salaId}
           onClose={async () => {
             setSalaId(null);
-            const updated = await getSalas(); // recarrega a lista
+            const updated = await getSalas();
             setSalas(updated);
           }}
         />

@@ -37,7 +37,6 @@ export default function ResourceBadges({ resources }: Props) {
 
     return (
         <div className="relative">
-            {/* Fade nas bordas */}
             {isScrollable && !isAtStart && (
                 <div className="absolute left-0 top-0 bottom-0 items-center w-8 bg-gradient-to-r from-[#121212] to-transparent z-10 pointer-events-none" >
                     <FaAngleLeft size={20} color="white" />

@@ -1,4 +1,3 @@
-// RoomDetailsModal.tsx
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { HStack } from "@/components/HStack";
@@ -13,7 +12,7 @@ import { getRecursoIcon } from "@/utils/recursosIcons";
 import { useCartao } from "@/hooks/useCartao";
 import { useAuth } from "@/context/authContext";
 import { InputText } from "./InputText";
-import { ICartao } from "@/interfaces/ICartao";
+import { BandeiraCartao, ICartao } from "@/interfaces/ICartao";
 import { AnimatePresence, motion } from "framer-motion";
 import { Accordion } from "./Accordion";
 import { Divider } from "./Divider";
@@ -21,6 +20,15 @@ import { useToast } from "@/context/ToastContext";
 import { useReserva } from "@/hooks/useReserva";
 import { ISala } from "@/interfaces/ISala";
 import { Spinner } from "./Spinner";
+import { HorizontalScroll } from "./HorizontalScroll";
+import { CheckboxCell } from "./Checkbox";
+import { detectarBandeiraCompleta } from "@/utils/detectarBandeira";
+import { getPaymentIcon } from "@/utils/getPaymentIcon";
+import {
+  validarCvvCartao,
+  validarNomeCartao,
+  validarValidadeCartao,
+} from "@/utils/validateCartao";
 
 interface RoomDetailsModalProps {
   room: ISala;
@@ -42,9 +50,16 @@ export default function RoomDetailsModal({
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<
     { horario: string; ativo: boolean }[]
   >([]);
-  const [selectedDate, setSelectedDate] = useState<string>(
-    () => new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const yyyy = tomorrow.getFullYear();
+    const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const dd = String(tomorrow.getDate()).padStart(2, "0");
+
+    return `${yyyy}-${mm}-${dd}`;
+  });
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit" | null>(
     null
@@ -64,10 +79,7 @@ export default function RoomDetailsModal({
     cvv: "",
   });
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
-
-  function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+  const [salvarCartao, setSalvarCartao] = useState(false);
 
   const formatarTempo = (segundos: number) => {
     const min = Math.floor(segundos / 60)
@@ -92,7 +104,9 @@ export default function RoomDetailsModal({
     setCartaoSelecionado(null);
     setSelectedSlots([]);
 
-    const diaDaSemana = new Date(selectedDate).getDay();
+    const [year, month, day] = selectedDate.split("-").map(Number);
+    const localDate = new Date(year, month - 1, day);
+    const diaDaSemana = localDate.getDay() + 1;
     const disponibilidadesDoDia = room.disponibilidades?.filter(
       (d) => d.diaDaSemana === diaDaSemana
     );
@@ -179,11 +193,26 @@ export default function RoomDetailsModal({
   const total = horasSelecionadas * precoHora;
 
   const handleSlotClick = (time: string) => {
-    setSelectedSlots((prev) =>
-      prev.includes(time)
-        ? prev.filter((t) => t !== time)
-        : [...prev, time].sort()
-    );
+    const index = selectedSlots.indexOf(time);
+
+    if (index !== -1) {
+      if (selectedSlots.length <= 1) {
+        setSelectedSlots([]);
+        return;
+      }
+
+      if (index !== 0 && index !== selectedSlots.length - 1) {
+        showToast("Desmarque os horários das pontas primeiro.", "info");
+        return;
+      }
+
+      const newSlots = [...selectedSlots];
+      newSlots.splice(index, 1);
+      setSelectedSlots(newSlots);
+    } else {
+      const newSlots = [...selectedSlots, time].sort();
+      setSelectedSlots(newSlots);
+    }
   };
 
   const handlePixCheckout = () => {
@@ -234,30 +263,12 @@ export default function RoomDetailsModal({
 
   const checkCartaoFields = () => {
     return (
-      novoCartao.nome !== "" &&
-      novoCartao.numero !== "" &&
-      novoCartao.validade !== "" &&
-      novoCartao.cvv !== ""
+      novoCartao.nome === "" ||
+      novoCartao.numero === "" ||
+      novoCartao.validade === "" ||
+      novoCartao.cvv === ""
     );
   };
-
-  function detectarBandeira(
-    numero: string
-  ): "Elo" | "Mastercard" | "Visa" | "Desconhecida" {
-    const cleanNumero = numero.replace(/\D/g, "");
-
-    const regexes = {
-      Visa: /^4\d{0,15}$/,
-      Mastercard: /^(5[1-5]\d{0,14}|2[2-7]\d{0,14})$/,
-      Elo: /^(4011(78|79)|4312(74|75)|438935|451416|457393|457631|457632|504175|506699|509\d{3}|627780|636297|636368)\d*$/,
-    };
-
-    if (regexes.Visa.test(cleanNumero)) return "Visa";
-    if (regexes.Mastercard.test(cleanNumero)) return "Mastercard";
-    if (regexes.Elo.test(cleanNumero)) return "Elo";
-
-    return "Desconhecida";
-  }
 
   const handlePagamento = async () => {
     setLoading(true);
@@ -265,39 +276,57 @@ export default function RoomDetailsModal({
 
     setTimeout(async () => {
       if (inserirNovoCartao) {
-        if (!checkCartaoFields()) {
+        console.log("inside cartao");
+        if (checkCartaoFields()) {
           showToast("Preencha todos os campos.", "error");
           setLoading(false);
           return;
         }
-        const bandeiraCartao = detectarBandeira(novoCartao.numero);
-        if (bandeiraCartao === "Desconhecida") {
+        const bandeiraCartao = detectarBandeiraCompleta(novoCartao.numero);
+        if (bandeiraCartao === "") {
           showToast("Cartão desconhecido.", "error");
           setLoading(false);
           return;
         }
+        if (!validarValidadeCartao(novoCartao.validade)) {
+          showToast("Data de validade vencida ou inválida.", "error");
+          setLoading(false);
+          return;
+        }
+        if (!validarCvvCartao(novoCartao.cvv)) {
+          showToast("CVV inválido.", "error");
+          setLoading(false);
+          return;
+        }
+        if (!validarNomeCartao(novoCartao.nome)) {
+          showToast("Nome do titular inválido.", "error");
+          setLoading(false);
+          return;
+        }
 
-        const cartaoCriado = await adicionarCartao({
-          numero: novoCartao.numero,
-          nomeTitular: novoCartao.nome,
-          validade: novoCartao.validade,
-          cvv: novoCartao.cvv,
-          bandeira: bandeira,
-          usuarioId: userData!.id,
-        })
-          .then((data) => {
-            cartaoId = data.id;
-            return data;
+        if (salvarCartao) {
+          const cartaoCriado = await adicionarCartao({
+            numero: novoCartao.numero,
+            nomeTitular: novoCartao.nome,
+            validade: novoCartao.validade,
+            cvv: novoCartao.cvv,
+            bandeira: bandeira,
+            usuarioId: userData!.id,
           })
-          .catch((data) => {
-            if (data.response.status === 409)
-              showToast("Cartão já cadastrado.", "error");
-            else showToast("Erro ao adicionar cartão.", "error");
-            setLoading(false);
-            return "";
-          });
+            .then((data) => {
+              cartaoId = data.id;
+              return data;
+            })
+            .catch((data) => {
+              if (data.response.status === 409)
+                showToast("Cartão já cadastrado.", "error");
+              else showToast("Erro ao adicionar cartão.", "error");
+              setLoading(false);
+              return "";
+            });
 
-        if (cartaoCriado === "") return;
+          if (cartaoCriado === "") return;
+        }
       }
 
       const pagamentoOk = await pagamento({
@@ -340,7 +369,7 @@ export default function RoomDetailsModal({
         .finally(() => {
           setLoading(false);
         });
-    }, 2000);
+    }, 1000);
   };
 
   const handlePagamentoPix = async () => {
@@ -365,6 +394,15 @@ export default function RoomDetailsModal({
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleSalvarCartao = () => {
+    if (cartoesSalvos.length >= 3 && !salvarCartao) {
+      showToast("Limite de cartões salvos atingido.", "error");
+      return;
+    } else {
+      setSalvarCartao(!salvarCartao);
+    }
   };
 
   if (!isOpen) return null;
@@ -456,17 +494,17 @@ export default function RoomDetailsModal({
                       </div>
                     </HStack>
 
-                    <HStack className="flex-wrap gap-2 mb-4">
+                    <HorizontalScroll className="gap-2 mb-4">
                       {room.salasRecursos?.map((r, i) => (
                         <HStack
                           key={i}
-                          className="bg-[#2a2a2a] px-3 py-1 rounded-lg gap-2 items-center text-sm text-white"
+                          className="bg-[#2a2a2a] px-3 py-1 rounded-lg gap-2 items-center text-sm text-white inline-flex shrink-0"
                         >
                           {getRecursoIcon(r.recurso.nome)}
                           <Text>{r.recurso.nome}</Text>
                         </HStack>
                       ))}
-                    </HStack>
+                    </HorizontalScroll>
 
                     <label
                       htmlFor="data"
@@ -515,8 +553,8 @@ export default function RoomDetailsModal({
                               !clicavel
                                 ? "bg-[#444] text-gray-500 cursor-not-allowed"
                                 : selected
-                                ? "bg-content-primary text-black"
-                                : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a]"
+                                ? "bg-content-primary text-black cursor-pointer"
+                                : "bg-[#2a2a2a] text-white hover:bg-[#3a3a3a] cursor-pointer"
                             }`}
                           >
                             {`${horario} – ${getProximoHorario(horario)}`}
@@ -649,11 +687,11 @@ export default function RoomDetailsModal({
                                       </div>
                                     ))}
                                   {cartoesSalvos.length === 0 && (
-                                    <Card className="w-full p-2 rounded-lg border border-[#333] bg-[#1E1E1E]">
-                                      <Text className="text-content-primary text-lg font-semibold">
-                                        Você não possui cartões salvos.
+                                    <HStack className="w-full items-center justify-center border border-dashed border-content-ternary rounded-lg p-6">
+                                      <Text className="text-content-primary text-center">
+                                        Nenhum cartão cadastrado.
                                       </Text>
-                                    </Card>
+                                    </HStack>
                                   )}
                                   <button
                                     className="mt-2 text-sm text-content-primary underline"
@@ -675,21 +713,26 @@ export default function RoomDetailsModal({
                                       placeholder="Número do cartão"
                                       className="p-2 rounded bg-[#2a2a2a] text-white"
                                       value={novoCartao.numero}
+                                      iconRight={getPaymentIcon(
+                                        bandeira as BandeiraCartao
+                                      )}
                                       onChange={(e) => {
                                         const raw = e.target.value.replace(
                                           /\D/g,
                                           ""
                                         );
-                                        if (raw.length > 16) return;
-
-                                        const formatted = raw
+                                        const limitedRaw = raw.slice(0, 19);
+                                        const formatted = limitedRaw
                                           .replace(/(.{4})/g, "$1 ")
                                           .trim();
+                                        1;
                                         setNovoCartao({
                                           ...novoCartao,
                                           numero: formatted,
                                         });
-                                        setBandeira(detectarBandeira(raw));
+                                        const novaBandeira =
+                                          detectarBandeiraCompleta(limitedRaw);
+                                        setBandeira(novaBandeira);
                                       }}
                                     />
                                     <InputText
@@ -714,12 +757,23 @@ export default function RoomDetailsModal({
                                         placeholder="Validade"
                                         className="p-2 rounded bg-[#2a2a2a] text-white"
                                         value={novoCartao.validade}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                          let raw = e.target.value
+                                            .replace(/\D/g, "")
+                                            .slice(0, 4);
+
+                                          if (raw.length >= 3) {
+                                            raw =
+                                              raw.slice(0, 2) +
+                                              "/" +
+                                              raw.slice(2);
+                                          }
+
                                           setNovoCartao({
                                             ...novoCartao,
-                                            validade: e.target.value,
-                                          })
-                                        }
+                                            validade: raw,
+                                          });
+                                        }}
                                       />
                                       <InputText
                                         id="cvv"
@@ -728,12 +782,26 @@ export default function RoomDetailsModal({
                                         placeholder="CVV"
                                         className="p-2 rounded bg-[#2a2a2a] text-white"
                                         value={novoCartao.cvv}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                          const raw = e.target.value.replace(
+                                            /\D/g,
+                                            ""
+                                          );
+                                          const limited = raw.slice(0, 3);
                                           setNovoCartao({
                                             ...novoCartao,
-                                            cvv: e.target.value,
-                                          })
-                                        }
+                                            cvv: limited,
+                                          });
+                                        }}
+                                      />
+                                    </HStack>
+                                    <HStack className="w-full items-center justify-end gap-2">
+                                      <Text className="text-content-primary">
+                                        Salvar cartão?
+                                      </Text>
+                                      <CheckboxCell
+                                        checked={salvarCartao}
+                                        onChange={() => handleSalvarCartao()}
                                       />
                                     </HStack>
                                   </VStack>
@@ -774,14 +842,14 @@ export default function RoomDetailsModal({
                       </Text>
 
                       <Button
-                        title="Confirmar"
+                        title="Fazer Reserva"
                         onClick={handlePagamento}
                         style={
                           !paymentMethod ||
                           paymentMethod === "pix" ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
-                            !novoCartao.numero)
+                            checkCartaoFields())
                             ? { opacity: 0.5, cursor: "not-allowed" }
                             : {}
                         }
@@ -790,7 +858,7 @@ export default function RoomDetailsModal({
                           paymentMethod === "pix" ||
                           (paymentMethod === "credit" &&
                             !cartaoSelecionado &&
-                            !checkCartaoFields())
+                            checkCartaoFields())
                         }
                         loading={loading}
                       />

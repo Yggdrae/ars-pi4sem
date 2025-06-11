@@ -15,8 +15,25 @@ export interface IPostResponse {
     },
     ultimosDigitos: string,
     validade: string,
-    bandeira: "VISA" | "ELO" | "MASTERCARD",
+    bandeira: BandeiraCartao,
     token: string,
     favorito: boolean,
     criadoEm: string
 }
+
+export type BandeiraCartao =
+  | "VISA"
+  | "MASTERCARD"
+  | "ELO"
+  | "AMEX"
+  | "DINERS"
+  | "DISCOVER"
+  | "HIPERCARD"
+  | "HIPER"
+  | "JCB"
+  | "MAESTRO"
+  | "UNIONPAY"
+  | "MIR"
+  | "ALIPAY"
+  | "PAYPAL"
+  | "";

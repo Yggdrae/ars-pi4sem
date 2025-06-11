@@ -18,24 +18,6 @@ export function RoomTabDetalhes({
   onClose,
   isCreating = false,
 }: RoomTabDetalhesProps) {
-  const { updateSala } = useSalas();
-  const { showToast } = useToast();
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
-
-  /* const handleSalvar = async () => {
-    setIsLoading(true);
-    try {
-      await updateSala(sala.id, { numero, andar, valorHora });
-      showToast("Sala atualizada com sucesso!", "success");
-      onClose();
-    } catch {
-      showToast("Erro ao atualizar sala.", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  }; */
 
   return (
     <VStack className="gap-4">

@@ -10,6 +10,7 @@ import { DiferenciaisSection } from "@/components/DiferenciaisSection";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSalas } from "@/hooks/useSalas";
+import { ISala } from "@/interfaces/ISala";
 
 export default function Home() {
   const { getDestaques } = useSalas();
@@ -21,7 +22,7 @@ export default function Home() {
       setDestaques(destaques.sort((a: ISala, b: ISala) => a.numero - b.numero));
     };
     fetchDestaques();
-  })
+  }, []);
   return (
     <Layout>
       <Hero
@@ -39,8 +40,9 @@ export default function Home() {
               Premium
             </Text>
           </HStack>
-          <Text className="text-[16px] sm:text-[20px] sm:w-2/3 text-content-ternary font-family-heading">
-            Espaços elegantes e funcionais para suas reuniões corporativas mais importantes.
+          <Text className="text-[16px] sm:text-[20px] sm:w-2/3 text-content-ternary font-family-text">
+            Espaços elegantes e funcionais para suas reuniões corporativas mais
+            importantes.
           </Text>
           <div className="mt-8 w-fit">
             <Link href="/salas">
@@ -56,33 +58,40 @@ export default function Home() {
 
       <DiferenciaisSection />
 
-      <HStack className="w-full justify-between items-center mb-10 px-4 sm:px-0 flex-wrap gap-2">
-        <Text className="text-[24px] sm:text-[30px] text-content-primary font-family-heading font-bold">
-          Salas em Destaque
-        </Text>
-        <Link href="/salas">
-          <Text className="text-[14px] sm:text-[16px] text-content-primary font-family-heading cursor-pointer">
-            Ver todas
+      {destaques.length > 0 && (
+        <HStack className="w-full justify-between items-center mb-10 px-4 sm:px-0 flex-wrap gap-2">
+          <Text className="text-[24px] sm:text-[30px] text-content-primary font-family-heading font-bold">
+            Salas em Destaque
           </Text>
-        </Link>
-      </HStack>
+          <Link href="/salas">
+            <Text className="text-[14px] sm:text-[16px] text-content-primary font-family-heading cursor-pointer">
+              Ver todas
+            </Text>
+          </Link>
+        </HStack>
+      )}
 
       <HStack className="w-full justify-center flex-wrap gap-8">
-        {destaques && destaques.map((destaque: ISala) => {
-          return (
-            <DestaqueCard
-              key={destaque.numero}
-              backgroundImage={destaque.salasImagens.length > 0 ? destaque.salasImagens[0].imagemBase64 : require("@/assets/destaque1.png")}
-              backgroundAlt={`Imagem da sala ${destaque.numero}`}
-              className="w-full sm:w-[48%] lg:w-[30%]"
-              title={`Sala ${destaque.numero}`}
-              badges={destaque.salasRecursos.map((item) => item.recurso.nome)}
-              capacity={destaque.capacidade}
-              hourValue={destaque.valorHora}
-            />
-          )
-        })}
-
+        {destaques.length > 0 &&
+          destaques.map((destaque: ISala) => {
+            return (
+              <DestaqueCard
+                key={destaque.numero}
+                salaId={destaque.id}
+                backgroundImage={
+                  destaque.salasImagens[0]
+                    ? destaque.salasImagens[0].imagemBase64
+                    : require("@/assets/conference-room.png")
+                }
+                backgroundAlt={`Imagem da sala ${destaque.numero}`}
+                className="w-full sm:w-[48%] lg:w-[30%]"
+                title={`Sala ${destaque.numero}`}
+                badges={destaque.salasRecursos}
+                capacity={destaque.capacidade}
+                hourValue={destaque.valorHora}
+              />
+            );
+          })}
       </HStack>
     </Layout>
   );

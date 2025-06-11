@@ -7,6 +7,7 @@ import { VStack } from "./VStack";
 import Link from "next/link";
 import { useForm } from "../hooks/useForms";
 import { useToast } from "@/context/ToastContext";
+import { useCadastro } from "@/hooks/useCadastro";
 
 interface IForm {
   nome: string;
@@ -17,10 +18,7 @@ interface IForm {
 
 export const RegisterForm = ({ className = "" }: { className?: string }) => {
   const { showToast } = useToast();
-  const { submit, loading } = useForm<IForm>({
-    endpoint: "/usuarios/create",
-    method: "POST",
-  });
+  const { createUser } = useCadastro();
 
   const nomeRegex = /^[A-Za-zÀ-ÿ]+(?: [A-Za-zÀ-ÿ]+)+$/;
   const emailRegex = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,}$/;
@@ -60,6 +58,16 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
     return "";
   };
 
+  const senhaStatus = (senha: string) => ({
+    length: senha.length >= 8,
+    letra: /[a-zA-Z]/.test(senha),
+    numero: /\d/.test(senha),
+    simbolo: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(senha),
+    confirma: senha === confSenha,
+  });
+
+  const status = senhaStatus(senha);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -81,21 +89,25 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
     }
 
     setTimeout(async () => {
-      await submit({ nome, email, senha, tipo: "user" });
-      showToast("Cadastro realizado com sucesso!", "success");
-      setIsLoading(false);
-      setNome("");
-      setEmail("");
-      setSenha("");
-      setConfSenha("");
+      await createUser({ nome, email, senha, tipo: "user" })
+        .then(() => {
+          showToast("Cadastro realizado com sucesso!", "success");
+          setNome("");
+          setEmail("");
+          setSenha("");
+          setConfSenha("");
+        })
+        .catch(() => {
+          showToast("Erro no cadastro. Tente novamente.", "error");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }, 2000);
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={`bg-[#2A2A2A] p-6 sm:p-8 flex-grow ${className}`}
-    >
+    <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
       <Text className="text-center text-[20px] lg:text-[24px] text-content-primary font-bold">
         Criar Conta
       </Text>
@@ -114,7 +126,6 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
         }}
         onBlur={() => setNomeError(validateNome(nome))}
         errorText={nomeError}
-        className="mt-4"
       />
 
       <InputText
@@ -128,7 +139,6 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
         }}
         onBlur={() => setEmailError(validateEmail(email))}
         errorText={emailError}
-        className="mt-4"
       />
 
       <InputText
@@ -143,8 +153,26 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
         }}
         onBlur={() => setSenhaError(validateSenha(senha))}
         errorText={senhaError}
-        className="mt-4"
       />
+      {senha && (
+        <VStack className="text-[12px] text-content-ternary space-y-1">
+          <Text className={status.length ? "text-green-500" : "text-red-500"}>
+            {status.length ? "✔" : "✖"} Mínimo 8 caracteres
+          </Text>
+          <Text className={status.letra ? "text-green-500" : "text-red-500"}>
+            {status.letra ? "✔" : "✖"} Pelo menos uma letra
+          </Text>
+          <Text className={status.numero ? "text-green-500" : "text-red-500"}>
+            {status.numero ? "✔" : "✖"} Pelo menos um número
+          </Text>
+          <Text className={status.simbolo ? "text-green-500" : "text-red-500"}>
+            {status.simbolo ? "✔" : "✖"} Pelo menos um símbolo
+          </Text>
+          <Text className={status.confirma ? "text-green-500" : "text-red-500"}>
+            {status.confirma ? "✔" : "✖"} Senhas iguais
+          </Text>
+        </VStack>
+      )}
 
       <InputText
         id="confirmarSenha"
@@ -158,10 +186,9 @@ export const RegisterForm = ({ className = "" }: { className?: string }) => {
         }}
         onBlur={() => setConfSenhaError(validateConfirmacao(confSenha, senha))}
         errorText={confSenhaError}
-        className="mt-4"
       />
 
-      <Button title="Cadastrar" className="mt-8 w-full" loading={isLoading} />
+      <Button title="Cadastrar" className="mt-10 w-full" loading={isLoading} />
 
       <HStack className="justify-center mt-8" gap={1}>
         <Text className="text-[12px] lg:text-[14px] text-content-ternary">

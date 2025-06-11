@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CheckboxCell } from './Checkbox';
 
 interface FlexTableProps<T> {
   data: T[];
@@ -6,6 +7,12 @@ interface FlexTableProps<T> {
     header: string;
     accessor: keyof T;
   }[];
+  boolValues?: {
+    header: string;
+    accessor: keyof T;
+    editable: boolean;
+    onClick?: (row: T) => void;
+  }[]
   actions?: {
     label: React.ReactNode;
     onClick: (row: T) => void;
@@ -14,7 +21,7 @@ interface FlexTableProps<T> {
   itemsPerPage?: number;
 }
 
-export function FlexTable<T>({ data, columns, actions, itemsPerPage = 5 }: FlexTableProps<T>) {
+export function FlexTable<T>({ data, columns, boolValues, actions, itemsPerPage = 5 }: FlexTableProps<T>) {
   const [page, setPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / itemsPerPage);
@@ -39,6 +46,14 @@ export function FlexTable<T>({ data, columns, actions, itemsPerPage = 5 }: FlexT
                 {col.header}
               </th>
             ))}
+            {boolValues && boolValues.map((col) => (
+              <th
+                key={String(col.accessor)}
+                className="p-3 border-b border-[#444] text-center align-middle"
+              >
+                {col.header}
+              </th>
+            ))}
             {actions && (
               <th className="p-3 border-b border-[#444] text-center align-middle">Ações</th>
             )}
@@ -55,6 +70,16 @@ export function FlexTable<T>({ data, columns, actions, itemsPerPage = 5 }: FlexT
                   {String(row[col.accessor])}
                 </td>
               ))}
+              {boolValues && boolValues.map((col) => (
+                <td
+                  key={String(col.accessor)}
+                  className="p-3 border-b border-[#444] text-center align-middle"
+                >
+                  <div className="flex justify-center items-center">
+                    <CheckboxCell checked={row[col.accessor] as boolean} onChange={() => col.onClick?.(row)} />
+                  </div>
+                </td>
+              ))}
               {actions && (
                 <td className="p-3 border-b border-[#444] text-center align-middle">
                   <div className="flex justify-center items-center gap-2">
@@ -62,9 +87,8 @@ export function FlexTable<T>({ data, columns, actions, itemsPerPage = 5 }: FlexT
                       <button
                         key={index}
                         onClick={() => action.onClick(row)}
-                        className={`px-3 py-1 rounded-md cursor-pointer transition-colors text-sm ${
-                          action.className || 'bg-[#E5D3B3] text-[#1E1E1E] hover:bg-[#d8c6a6]'
-                        }`}
+                        className={`px-3 py-1 rounded-md cursor-pointer transition-colors text-sm ${action.className || 'bg-[#E5D3B3] text-[#1E1E1E] hover:bg-[#d8c6a6]'
+                          }`}
                       >
                         {action.label}
                       </button>
@@ -91,11 +115,10 @@ export function FlexTable<T>({ data, columns, actions, itemsPerPage = 5 }: FlexT
             <button
               key={index}
               onClick={() => goToPage(index + 1)}
-              className={`px-3 py-1 border rounded ${
-                page === index + 1
+              className={`px-3 py-1 border rounded ${page === index + 1
                   ? 'bg-[#E5D3B3] text-[#1E1E1E]'
                   : 'bg-[#1E1E1E] text-[#E5D3B3] hover:bg-[#333]'
-              }`}
+                }`}
             >
               {index + 1}
             </button>

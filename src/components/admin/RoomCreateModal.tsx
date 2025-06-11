@@ -1,4 +1,3 @@
-// RoomCreateModal.tsx
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/Modal";
 import { VStack } from "@/components/VStack";
@@ -33,14 +32,12 @@ export default function RoomCreateModal({
   const { criaHorarioSala } = useHorarios();
   const { showToast } = useToast();
 
-  const [selectedTab, setSelectedTab] = useState("detalhes");
-
+  const [step, setStep] = useState(1);
   const [numero, setNumero] = useState("");
   const [andar, setAndar] = useState("");
   const [valorHora, setValorHora] = useState("");
   const [capacidade, setCapacidade] = useState("");
-
-  const [imagens, setImagens] = useState<File[]>([]);
+  const [imagens, setImagens] = useState<{ id: string; file: File }[]>([]);
   const [recursosSelecionados, setRecursosSelecionados] = useState<number[]>(
     []
   );
@@ -63,30 +60,59 @@ export default function RoomCreateModal({
     getRecursos().then(setTodosRecursos);
   }, []);
 
-  const checkFields = () => {
-    let notFilled = [];
-    if (!numero) notFilled.push("Número");
-    if (!andar) notFilled.push("Andar");
-    if (!valorHora) notFilled.push("Valor por hora");
-    if (!capacidade) notFilled.push("Capacidade");
+  const handleNext = () => {
+    if (step === 1) {
+      let notFilled = [];
+      if (!numero) notFilled.push("Número");
+      if (!andar) notFilled.push("Andar");
+      if (!valorHora) notFilled.push("Valor por hora");
+      if (!capacidade) notFilled.push("Capacidade");
 
-    let horariosFilled = 0;
-    horarios.map((horario) => {
-      if (horario.horarioInicio !== "" && horario.horarioFim !== "") horariosFilled += 1;
-    });
-    
-    if(imagens.length === 0) showToast("Faça upload de ao menos uma imagem", "error");
-    if(horariosFilled === 0) showToast("Preencha ao menos um horário", "error");
-    if(notFilled.length > 0) showToast(`Preencha todos detalhes da sala`, "error");
+      if (notFilled.length > 0) {
+        showToast(`Preencha todos detalhes da sala`, "error");
+        return;
+      } else {
+        setStep(2);
+      }
+    }
+    if (step === 2) {
+      if (imagens.length === 0) {
+        showToast("Faça upload de ao menos uma imagem", "error");
+        return;
+      } else {
+        setStep(3);
+      }
+    }
+    if (step === 3) {
+      if (recursosSelecionados.length === 0) {
+        showToast("Selecione ao menos um recurso", "error");
+        return;
+      } else {
+        setStep(4);
+      }
+    }
+    if (step === 4) {
+      let horariosFilled = 0;
+      horarios.map((horario) => {
+        if (horario.horarioInicio !== "" && horario.horarioFim !== "")
+          horariosFilled += 1;
+      });
+      if (horariosFilled === 0) {
+        showToast("Preencha ao menos um horário", "error");
+        return;
+      } else {
+        handleSalvar();
+      }
+    }
+  };
 
-    return notFilled.length === 0 && horariosFilled > 0;
+  const handlePrevious = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
   };
 
   const handleSalvar = async () => {
-    const isValid = checkFields();
-
-    if (!isValid) return;
-
     setIsLoading(true);
     setTimeout(async () => {
       try {
@@ -97,9 +123,15 @@ export default function RoomCreateModal({
           capacidade,
         });
 
-        for (const img of imagens) {
-          await uploadImagem({ salaId: novaSala.id, imagem: img });
-        }
+        await Promise.all(
+          imagens.map(async (img, index) => {
+            await uploadImagem({
+              salaId: novaSala.id,
+              imagem: img.file,
+              ordem: index + 1,
+            });
+          })
+        );
 
         for (const recursoId of recursosSelecionados) {
           await addRecursoSala({
@@ -110,7 +142,7 @@ export default function RoomCreateModal({
         }
 
         for (const horario of horarios) {
-          if(horario.horarioInicio !== "" && horario.horarioFim !== "") {
+          if (horario.horarioInicio !== "" && horario.horarioFim !== "") {
             await criaHorarioSala({
               salaId: novaSala.id,
               diaDaSemana: horario.diaDaSemana,
@@ -140,31 +172,28 @@ export default function RoomCreateModal({
     >
       <VStack className="gap-6 p-4">
         <div className="flex gap-4 border-b border-[#333]">
-          {tabs.map(({ label, key, icon: Icon }) => {
-            const isActive = selectedTab === key;
+          {tabs.map(({ label, key, icon: Icon }, index) => {
+            const isActive = step === index + 1;
             return (
-              <button
+              <div
                 key={key}
-                onClick={() => setSelectedTab(key)}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-2
-                ${
-                  isActive
-                    ? "text-content-primary border-[#E5D3B3]"
-                    : "text-content-ternary border-transparent hover:text-content-primary"
-                }`}
-              >
-                <Icon
-                  className={`text-base ${
-                    isActive ? "text-[#E5D3B3]" : "text-[#999]"
+                  ${
+                    isActive
+                      ? "text-content-primary border-[#E5D3B3]"
+                      : step > index + 1
+                      ? "text-green-500 border-green-500"
+                      : "text-content-ternary border-transparent"
                   }`}
-                />
+              >
+                <Icon className="text-base" />
                 <Text>{label}</Text>
-              </button>
+              </div>
             );
           })}
         </div>
 
-        {selectedTab === "detalhes" && (
+        {step === 1 && (
           <RoomTabDetalhes
             sala={{ numero, andar, valorHora, capacidade }}
             setSala={({ numero, andar, valorHora, capacidade }) => {
@@ -178,7 +207,7 @@ export default function RoomCreateModal({
           />
         )}
 
-        {selectedTab === "imagens" && (
+        {step === 2 && (
           <RoomTabImagens
             imagens={imagens}
             setImagens={setImagens}
@@ -186,7 +215,7 @@ export default function RoomCreateModal({
           />
         )}
 
-        {selectedTab === "recursos" && (
+        {step === 3 && (
           <RoomTabRecursos
             recursosSelecionados={recursosSelecionados}
             setRecursosSelecionados={setRecursosSelecionados}
@@ -209,7 +238,7 @@ export default function RoomCreateModal({
           />
         )}
 
-        {selectedTab === "horarios" && (
+        {step === 4 && (
           <RoomTabHorarios
             isCreating
             horarios={horarios}
@@ -217,13 +246,31 @@ export default function RoomCreateModal({
           />
         )}
 
-        <div className="mt-6 place-self-end">
-          <Button
-            title="Criar sala"
-            onClick={handleSalvar}
-            loading={isLoading}
-          />
-        </div>
+        {step === 1 && (
+          <div className="mt-6 place-self-end">
+            <Button
+              title="Próximo"
+              onClick={handleNext}
+              loading={isLoading}
+            />
+          </div>
+        )}
+        {(step === 2 || step === 3) && (
+          <div className="mt-6 flex justify-between">
+            <Button title="Voltar" onClick={handlePrevious} />
+            <Button title="Próximo" onClick={handleNext} />
+          </div>
+        )}
+        {step === 4 && (
+          <div className="mt-6 flex justify-between">
+            <Button title="Voltar" onClick={handlePrevious} />
+            <Button
+              title="Criar sala"
+              onClick={handleNext}
+              loading={isLoading}
+            />
+          </div>
+        )}
       </VStack>
     </Modal>
   );

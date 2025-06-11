@@ -1,10 +1,12 @@
 import { FaSnowflake, FaTv, FaVideo } from "react-icons/fa";
+import { getRecursoIcon } from "@/utils/recursosIcons";
 import Card from "./Card";
 import { HStack } from "./HStack";
 import { Text } from "./Text";
 import { VStack } from "./VStack";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "./Button";
+import { ISala } from "@/interfaces/ISala";
 
 interface FilterSectionProps {
   rooms: ISala[];
@@ -15,17 +17,47 @@ export const FilterSection = ({
   rooms,
   onFilterSelection,
 }: FilterSectionProps) => {
-  const capacidades = ["4", "6", "8", "10", "12+"];
-  const andares = ["1º", "2º", "3º", "4º"];
-  const recursos = [
-    { nome: "TV", icon: FaTv },
-    { nome: "Projetor", icon: FaVideo },
-    { nome: "Ar Condicionado", icon: FaSnowflake },
-  ];
-
   const [selectedCapacidades, setSelectedCapacidades] = useState<string[]>([]);
   const [selectedAndares, setSelectedAndares] = useState<string[]>([]);
   const [selectedRecursos, setSelectedRecursos] = useState<string[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const capacidadesUnicas = useMemo(() => {
+    let capacidades: string[] = [];
+    const todasCapacidades = rooms.map((s) => s.capacidade);
+
+    todasCapacidades.forEach((capacidade) => {
+      if (capacidade >= 12) {
+        if (capacidades.includes("12+")) return;
+        capacidades.push("12+");
+        return;
+      } else if (capacidades.includes(capacidade.toString())) return;
+      capacidades.push(capacidade.toString());
+    });
+
+    return capacidades;
+  }, [rooms]);
+
+  const andaresUnicos = useMemo(() => {
+    const todos = rooms.map((s) => s.andar);
+    const distintos = Array.from(new Set(todos));
+    return distintos.sort((a, b) => (a > b ? 1 : -1)).map((v) => `${v}º`);
+  }, [rooms]);
+
+  const recursosUnicos = useMemo(() => {
+    const nomes = rooms.flatMap(
+      (s) => s.salasRecursos?.map((r) => r.recurso?.nome) || []
+    );
+    const distintos = Array.from(new Set(nomes));
+    return distintos.map((nome) => ({ nome }));
+  }, [rooms]);
 
   useEffect(() => {
     const filtradas = rooms.filter((sala) => {
@@ -38,12 +70,12 @@ export const FilterSection = ({
 
       const andarMatch =
         selectedAndares.length === 0 ||
-        selectedAndares.includes(sala.andar + "º");
+        selectedAndares.includes(`${sala.andar}º`);
 
       const recursosMatch =
         selectedRecursos.length === 0 ||
         selectedRecursos.every((rec) =>
-          sala.salasRecursos.some((r) => r.recurso.nome === rec)
+          sala.salasRecursos?.some((r) => r.recurso?.nome === rec)
         );
 
       return capacidadeMatch && andarMatch && recursosMatch;
@@ -64,8 +96,8 @@ export const FilterSection = ({
     }
   };
 
-  return (
-    <Card className="w-full md:w-1/3 lg:w-1/4 p-4 mb-6 md:mb-0">
+  const filtroJSX = (
+    <>
       <HStack className="justify-between items-end">
         <Text className="text-[20px] sm:text-[20px] text-content-primary font-family-heading font-bold">
           Filtros
@@ -80,10 +112,9 @@ export const FilterSection = ({
         />
       </HStack>
 
-      {/* CAPACIDADE */}
       <Text className="mt-4 text-white">Capacidade</Text>
       <HStack className="flex-wrap gap-2">
-        {capacidades.map((capacidade) => (
+        {capacidadesUnicas.map((capacidade) => (
           <Card
             key={capacidade}
             className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
@@ -102,10 +133,9 @@ export const FilterSection = ({
         ))}
       </HStack>
 
-      {/* ANDAR */}
       <Text className="mt-4 text-white">Andar</Text>
       <HStack className="flex-wrap gap-2">
-        {andares.map((andar) => (
+        {andaresUnicos.map((andar) => (
           <Card
             key={andar}
             className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
@@ -120,31 +150,42 @@ export const FilterSection = ({
         ))}
       </HStack>
 
-      {/* RECURSOS */}
       <Text className="mt-4 text-white">Recursos</Text>
       <VStack className="gap-2">
-        {recursos.map((recurso) => {
-          return (
-            <Card
-              key={recurso.nome}
-              className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
-                selectedRecursos.includes(recurso.nome) ? "bg-[#444]" : ""
-              }`}
-              onClick={() =>
-                toggleSelection(
-                  recurso.nome,
-                  selectedRecursos,
-                  setSelectedRecursos
-                )
-              }
-            >
-              <HStack className="gap-2 items-center">
-                <Text className="text-white">{recurso.nome}</Text>
-              </HStack>
-            </Card>
-          );
-        })}
+        {recursosUnicos.map((recurso) => (
+          <Card
+            key={recurso.nome}
+            className={`bg-[#2A2A2A] px-4 py-2 cursor-pointer hover:bg-[#3a3a3a] ${
+              selectedRecursos.includes(recurso.nome) ? "bg-[#444]" : ""
+            }`}
+            onClick={() =>
+              toggleSelection(
+                recurso.nome,
+                selectedRecursos,
+                setSelectedRecursos
+              )
+            }
+          >
+            <HStack className="gap-2 items-center">
+              {getRecursoIcon(recurso.nome, { size: 16, color: "white" })}
+              <Text className="text-white">{recurso.nome}</Text>
+            </HStack>
+          </Card>
+        ))}
       </VStack>
+    </>
+  );
+
+  return isMobile ? (
+    <details className="w-full md:hidden">
+      <summary className="text-white cursor-pointer py-2 px-4 bg-[#2A2A2A] rounded-md mb-4">
+        Mostrar filtros
+      </summary>
+      <div className="mt-2 p-2 bg-[#1f1f1f] rounded-md">{filtroJSX}</div>
+    </details>
+  ) : (
+    <Card className="w-full md:w-1/3 lg:w-1/4 p-4 mb-6 md:mb-0">
+      {filtroJSX}
     </Card>
   );
 };

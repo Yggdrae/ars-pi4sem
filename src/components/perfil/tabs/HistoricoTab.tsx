@@ -82,6 +82,22 @@ export const HistoricoTab = () => {
     fetchHistorico();
   }, []);
 
+  const verificaHora = (reserva: IReserva) => {
+    const diaHoraDeHoje = new Date().getTime();
+    const dataReserva = new Date(reserva.diaHoraInicio).getTime();
+
+    const hour = 1000 * 60 * 60;
+
+    if (dataReserva - diaHoraDeHoje < hour) {
+      showToast(
+        "Reserva deve ser cancelada com no minimo 1 hora de antecedência",
+        "error"
+      );
+      return false;
+    }
+    return true;
+  };
+
   const actions = [
     {
       label: (
@@ -108,12 +124,10 @@ export const HistoricoTab = () => {
           if (reserva.id === row.id) return reserva;
         });
         if (reserva && reserva!.status === "Cancelada") {
-          showToast(
-            "Reserva já foi cancelada",
-            "error",
-          );
+          showToast("Reserva já foi cancelada", "error");
           return;
         }
+        if (!verificaHora(reserva!)) return;
         setReservaSelecionada(reserva ? reserva : undefined);
         setModalTipo("cancelar");
       },
@@ -172,7 +186,17 @@ export const HistoricoTab = () => {
 
   return (
     <VStack className="gap-8 mt-6">
-      <FlexTable data={historico} columns={colunas} actions={actions} />
+      {historico.length > 0 && (
+        <FlexTable data={historico} columns={colunas} actions={actions} />
+      )}
+
+      {historico.length === 0 && (
+        <HStack className="w-full items-center justify-center border border-dashed border-content-ternary rounded-lg p-6">
+          <Text className="text-content-primary text-center">
+            Nenhuma reserva encontrada
+          </Text>
+        </HStack>
+      )}
 
       <Modal
         isOpen={modalTipo !== undefined && reservaSelecionada !== undefined}
@@ -227,7 +251,8 @@ export const HistoricoTab = () => {
             </Text>
             {reservaSelecionada.status === "Cancelada" && (
               <Text>
-                <strong>Motivo Cancelamento:</strong> {reservaSelecionada.motivoCancelamento}
+                <strong>Motivo Cancelamento:</strong>{" "}
+                {reservaSelecionada.motivoCancelamento}
               </Text>
             )}
             {modalTipo === "cancelar" && (

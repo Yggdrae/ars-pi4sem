@@ -1,14 +1,22 @@
 @import "tailwindcss";
 
 @theme {
+  /* Font Families */
+  --font-family-heading: "Arial", sans-serif;
+  --font-family-text: "Roboto Flex", sans-serif;
+  --font-family-mono: "Fira Code", monospace;
+
+  --font-family-heading: var(--font-playfair-display), serif;
+  --font-family-text: var(--font-inter), sans-serif;
+
   /* Placeholder Colors */
   --placeholder-light: var(--placeholder-light);
   --placeholder-dark: var(--placeholder-dark);
 
   /* Content Colors */
-  --color-content-primary: #E5D3B3;
-  --color-content-secondary: #1E1E1E;
-  --color-content-ternary: #D1D5DC;
+  --color-content-primary: #e5d3b3;
+  --color-content-secondary: #1e1e1e;
+  --color-content-ternary: #d1d5dc;
 
   /* Default Palette */
   --color-default-content: #363636;
@@ -130,13 +138,25 @@
   /* Font Sizes */
   --font-size-2xs: 0.625rem;
 
-  /* Font Families */
-  --font-family-heading: "Arial", sans-serif;
-  --font-family-text: "Roboto Flex", sans-serif;
-  --font-family-mono: "Fira Code", monospace;
-
   /* Box Shadows */
-  --shadow-raise-default: 0 14px 26px -12px rgba(223, 223, 223, 42%), 0 4px 23px 0 rgba(0, 0, 0, 12%), 0 8px 10px -5px rgba(223, 223, 223, 20%);
-  --shadow-raise-primary: 0 14px 26px -12px rgba(90, 129, 250, 42%), 0 4px 23px 0 rgba(0, 0, 0, 12%), 0 8px 10px -5px rgba(90, 129, 250, 20%);
-  --shadow-raise-secondary: 0 14px 26px -12px rgba(43, 49, 138, 42%), 0 4px 23px 0 rgba(0, 0, 0, 12%), 0 8px 10px -5px rgba(43, 49, 138, 20%);
+  --shadow-raise-default: 0 14px 26px -12px rgba(223, 223, 223, 42%),
+    0 4px 23px 0 rgba(0, 0, 0, 12%), 0 8px 10px -5px rgba(223, 223, 223, 20%);
+  --shadow-raise-primary: 0 14px 26px -12px rgba(90, 129, 250, 42%),
+    0 4px 23px 0 rgba(0, 0, 0, 12%), 0 8px 10px -5px rgba(90, 129, 250, 20%);
+  --shadow-raise-secondary: 0 14px 26px -12px rgba(43, 49, 138, 42%),
+    0 4px 23px 0 rgba(0, 0, 0, 12%), 0 8px 10px -5px rgba(43, 49, 138, 20%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE e Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  cursor: grab;
 }

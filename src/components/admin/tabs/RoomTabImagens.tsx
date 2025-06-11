@@ -13,11 +13,17 @@ import { FaUpload } from "react-icons/fa";
 interface SalaImagem {
   id: number;
   imagemBase64: string;
+  file: File;
+}
+
+interface ImagemCriacao {
+  id: string;
+  file: File;
 }
 
 interface RoomTabImagensProps {
-  imagens?: File[];
-  setImagens?: (imgs: File[]) => void;
+  imagens?: ImagemCriacao[];
+  setImagens?: (imgs: ImagemCriacao[]) => void;
   isCreating?: boolean;
   imagensReordenadas?: SalaImagem[];
   setImagensReordenadas?: (imgs: SalaImagem[]) => void;
@@ -31,10 +37,15 @@ export function RoomTabImagens({
   setImagensReordenadas,
 }: RoomTabImagensProps) {
   const { showToast } = useToast();
+
+  function getNegativeTempId(imagens: { id: number }[]) {
+    const minId = imagens.reduce((min, img) => Math.min(min, img.id), 0);
+    return minId <= 0 ? minId - 1 : -1;
+  }
+
   const handleImagemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    console.log("AAA");
 
     const validFiles: File[] = files.filter(
       (file) => file.size <= 2 * 1024 * 1024
@@ -47,20 +58,24 @@ export function RoomTabImagens({
     if (!validFiles.length) return;
 
     if (isCreating && setImagens) {
-      setImagens(validFiles);
+      const novas = validFiles.map((file, idx) => ({
+        id: crypto.randomUUID(),
+        file,
+      }));
+      setImagens([...imagens, ...novas]);
     } else if (setImagensReordenadas) {
-      const novas = validFiles.map((file, index) => ({
-        id: index + 1 + imagensReordenadas.length,
+      const novas = validFiles.map((file) => ({
+        id: getNegativeTempId(imagensReordenadas),
         imagemBase64: URL.createObjectURL(file),
+        file: file,
       }));
       setImagensReordenadas([...imagensReordenadas, ...novas]);
     }
   };
 
-  const handleRemoverImagem = (indexOrId: number) => {
+  const handleRemoverImagem = (indexOrId: number | string) => {
     if (isCreating && setImagens) {
-      const novas = [...imagens];
-      novas.splice(indexOrId, 1);
+      const novas = imagens.filter((img) => img.id !== indexOrId);
       setImagens(novas);
     } else if (setImagensReordenadas) {
       if (imagensReordenadas.length === 1) {
@@ -75,21 +90,33 @@ export function RoomTabImagens({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!active || !over || active.id === over.id) return;
-    if (!setImagensReordenadas) return;
 
-    const oldIndex = imagensReordenadas.findIndex(
-      (img) => img.id === active.id
-    );
-    const newIndex = imagensReordenadas.findIndex((img) => img.id === over.id);
+    if (!isCreating && setImagensReordenadas) {
+      const oldIndex = imagensReordenadas.findIndex(
+        (img) => img.id === active.id
+      );
+      const newIndex = imagensReordenadas.findIndex(
+        (img) => img.id === over.id
+      );
 
-    if (oldIndex === -1 || newIndex === -1) return;
+      if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove(imagensReordenadas, oldIndex, newIndex);
-    setImagensReordenadas(reordered);
+      const reordered = arrayMove(imagensReordenadas, oldIndex, newIndex);
+      setImagensReordenadas(reordered);
+    }
+
+    if (isCreating && setImagens) {
+      const oldIndex = imagens.findIndex((img) => img.id === active.id);
+      const newIndex = imagens.findIndex((img) => img.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const reordered = arrayMove(imagens, oldIndex, newIndex);
+      setImagens(reordered);
+    }
   };
 
   const imagensParaExibir = isCreating ? imagens : imagensReordenadas;
-  console.log(isCreating ? "imagens" : "imagensReordenadas");
 
   return (
     <VStack className="gap-4">
@@ -121,19 +148,17 @@ export function RoomTabImagens({
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={imagensParaExibir.map((img, idx) =>
-              isCreating ? idx : (img as SalaImagem).id
-            )}
+            items={imagens.map((img) => img.id)}
             strategy={verticalListSortingStrategy}
           >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {imagensParaExibir.map((img, i) => (
                 <SortableImage
-                  key={isCreating ? i : (img as SalaImagem).id}
-                  id={isCreating ? i : (img as SalaImagem).id}
+                  key={img.id}
+                  id={img.id}
                   src={
                     isCreating
-                      ? URL.createObjectURL(img as File)
+                      ? URL.createObjectURL(img.file as File)
                       : (img as SalaImagem).imagemBase64
                   }
                   onRemove={() =>

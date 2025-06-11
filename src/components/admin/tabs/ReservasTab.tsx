@@ -6,6 +6,7 @@ import { Modal } from "@/components/Modal";
 import Button from "@/components/Button";
 import { IReserva } from "@/interfaces/IReserva";
 import { Text } from "@/components/Text";
+import { HStack } from "@/components/HStack";
 
 interface IHistorico {
   id: number;
@@ -113,7 +114,17 @@ export const ReservasTab = () => {
 
   return (
     <VStack className="gap-8 mt-6">
-      <FlexTable data={historico} columns={colunas} actions={actions} />
+      {historico.length > 0 && (
+        <FlexTable data={historico} columns={colunas} actions={actions} />
+      )}
+
+      {historico.length === 0 && (
+        <HStack className="w-full items-center justify-center border border-dashed border-content-ternary rounded-lg p-6">
+          <Text className="text-content-primary text-center">
+            Nenhuma reserva encontrada.
+          </Text>
+        </HStack>
+      )}
 
       <Modal
         isOpen={reservaSelecionada !== undefined}
@@ -124,12 +135,10 @@ export const ReservasTab = () => {
         {reservaSelecionada && (
           <VStack className="gap-3">
             <Text>
-              <strong>Usuário:</strong>{" "}
-              {reservaSelecionada.usuario.nome}
+              <strong>Usuário:</strong> {reservaSelecionada.usuario.nome}
             </Text>
             <Text>
-              <strong>Email:</strong>{" "}
-              {reservaSelecionada.usuario.email}
+              <strong>Email:</strong> {reservaSelecionada.usuario.email}
             </Text>
             <Text>
               <strong>Sala:</strong> Sala {reservaSelecionada.sala.numero} -
