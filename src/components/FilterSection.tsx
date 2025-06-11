@@ -30,20 +30,20 @@ export const FilterSection = ({
   }, []);
 
   const capacidadesUnicas = useMemo(() => {
-    let capacidades: string[] = [];
-    const todasCapacidades = rooms.map((s) => s.capacidade);
+  const capacidadesSet = new Set<string>();
 
-    todasCapacidades.forEach((capacidade) => {
-      if (capacidade >= 12) {
-        if (capacidades.includes("12+")) return;
-        capacidades.push("12+");
-        return;
-      } else if (capacidades.includes(capacidade.toString())) return;
-      capacidades.push(capacidade.toString());
-    });
+  rooms.forEach(({ capacidade }) => {
+    if (typeof capacidade !== "number") return; // evita null, undefined, strings, etc.
 
-    return capacidades;
-  }, [rooms]);
+    if (capacidade >= 12) {
+      capacidadesSet.add("12+");
+    } else {
+      capacidadesSet.add(capacidade.toString());
+    }
+  });
+
+  return Array.from(capacidadesSet);
+}, [rooms]);
 
   const andaresUnicos = useMemo(() => {
     const todos = rooms.map((s) => s.andar);
