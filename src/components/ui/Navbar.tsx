@@ -15,6 +15,7 @@ import { HStack } from "../HStack";
 import { VStack } from "../VStack";
 import { useAuth } from "@/context/authContext";
 import { useToast } from "@/context/ToastContext";
+import Image from "next/image";
 
 interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
@@ -55,8 +56,13 @@ export function Navbar({ children, ...props }: NavbarProps) {
       className={`flex flex-row bg-content-secondary border border-b-content-primary/30 w-full justify-between items-center py-4 px-6 sm:px-10 lg:px-20 sticky top-0 z-50 ${props.className}`}
     >
       <Link href="/">
-        <HStack gap={3} className="cursor-pointer items-center text-center">
-          <FaHome className="text-content-primary" size={24} />
+        <HStack className="cursor-pointer items-center text-center gap-2">
+          <Image
+            src={require("@/assets/icon.png")}
+            alt="Logo Eldorado"
+            width={40}
+            height={40}
+          />
           <p className="text-content-primary text-[18px] sm:text-[20px] font-family-heading font-bold">
             Eldorado
           </p>
