@@ -213,19 +213,28 @@ export const PagamentoTab = () => {
         </VStack>
       </Modal>
 
-      {meiosPagamento.map((pagamento) => (
-        <MeioPagamento
-          key={pagamento.id}
-          pagamento={{
-            bandeiraCartao: pagamento.bandeira,
-            numeroCartao: pagamento.ultimosDigitos,
-            validadeCartao: pagamento.validade,
-            padrao: pagamento.favorito,
-          }}
-          onDefinirPadrao={() => {}}
-          onRemover={() => handleDeleteCartao(pagamento.id)}
-        />
-      ))}
+      {meiosPagamento.length === 0 && (
+        <HStack className="w-full items-center justify-center border border-dashed border-content-ternary rounded-lg p-6">
+          <Text className="text-content-primary text-center">
+            Nenhum cartão cadastrado.
+          </Text>
+        </HStack>
+      )}
+
+      {meiosPagamento.length > 0 &&
+        meiosPagamento.map((pagamento) => (
+          <MeioPagamento
+            key={pagamento.id}
+            pagamento={{
+              bandeiraCartao: pagamento.bandeira,
+              numeroCartao: pagamento.ultimosDigitos,
+              validadeCartao: pagamento.validade,
+              padrao: pagamento.favorito,
+            }}
+            onDefinirPadrao={() => {}}
+            onRemover={() => handleDeleteCartao(pagamento.id)}
+          />
+        ))}
     </VStack>
   );
 };

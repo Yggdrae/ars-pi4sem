@@ -191,7 +191,11 @@ export const HistoricoTab = () => {
       )}
 
       {historico.length === 0 && (
-        <Text className="text-center text-content-ternary">Nenhuma reserva encontrada</Text>
+        <HStack className="w-full items-center justify-center border border-dashed border-content-ternary rounded-lg p-6">
+          <Text className="text-content-primary text-center">
+            Nenhuma reserva encontrada
+          </Text>
+        </HStack>
       )}
 
       <Modal

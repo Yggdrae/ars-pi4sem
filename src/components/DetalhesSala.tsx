@@ -687,11 +687,11 @@ export default function RoomDetailsModal({
                                       </div>
                                     ))}
                                   {cartoesSalvos.length === 0 && (
-                                    <Card className="w-full p-2 rounded-lg border border-[#333] bg-[#1E1E1E]">
-                                      <Text className="text-content-primary text-lg font-semibold">
-                                        Você não possui cartões salvos.
+                                    <HStack className="w-full items-center justify-center border border-dashed border-content-ternary rounded-lg p-6">
+                                      <Text className="text-content-primary text-center">
+                                        Nenhum cartão cadastrado.
                                       </Text>
-                                    </Card>
+                                    </HStack>
                                   )}
                                   <button
                                     className="mt-2 text-sm text-content-primary underline"
