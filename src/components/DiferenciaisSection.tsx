@@ -49,7 +49,7 @@ export const DiferenciaisSection = () => {
               <Text className="text-[18px] text-center text-content-primary font-family-heading mb-2">
                 {item.title}
               </Text>
-              <Text className="text-center text-[15px] text-content-ternary font-family-heading">
+              <Text className="text-center text-[15px] text-content-ternary font-family-text">
                 {item.description}
               </Text>
             </Card>

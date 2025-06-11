@@ -40,7 +40,7 @@ export default function Home() {
               Premium
             </Text>
           </HStack>
-          <Text className="text-[16px] sm:text-[20px] sm:w-2/3 text-content-ternary font-family-heading">
+          <Text className="text-[16px] sm:text-[20px] sm:w-2/3 text-content-ternary font-family-text">
             Espaços elegantes e funcionais para suas reuniões corporativas mais
             importantes.
           </Text>

@@ -25,7 +25,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "font-family-heading rounded-lg transition-colors duration-200 cursor-pointer inline-flex items-center justify-center gap-2";
+    "font-family-heading rounded-lg transition-colors duration-200 cursor-pointer inline-flex items-center justify-center gap-2 font-family-text";
 
   const variantStyles = {
     primary: "bg-[#E5D3B3] text-[#1E1E1E] hover:bg-[#d8c6a6]",
