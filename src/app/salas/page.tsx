@@ -11,6 +11,7 @@ import { ISala } from "@/interfaces/ISala";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { SalaCardSkeleton } from "@/components/SalaCardSkeleton";
 
 export default function Salas() {
   const router = useRouter();
@@ -24,26 +25,29 @@ export default function Salas() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalItem, setModalItem] = useState<any>();
   const [filteredSalas, setFilteredSalas] = useState<any>(salas);
+  const [loadingSalas, setLoadingSalas] = useState(false);
 
   useEffect(() => {
     const fetchSalas = async () => {
+      setLoadingSalas(true);
       const data = await getSalasFull();
-      setSalas(data.sort((a: ISala, b: ISala) => a.numero - b.numero));
-      setFilteredSalas(data.sort((a: ISala, b: ISala) => a.numero - b.numero));
+      const ordenadas = data.sort((a: ISala, b: ISala) => a.numero - b.numero);
+      setSalas(ordenadas);
+      setFilteredSalas(ordenadas);
+      setLoadingSalas(false);
     };
-    fetchSalas()
+    fetchSalas();
   }, []);
 
   useEffect(() => {
-    if(salaId){
+    if (salaId) {
       const sala = salas.find((sala: ISala) => sala.id == Number(salaId));
-      if(sala){
+      if (sala) {
         setModalItem(sala);
         setModalIsOpen(true);
       }
     }
-  }, [salas])
-
+  }, [salas]);
 
   return (
     <Layout>
@@ -56,40 +60,46 @@ export default function Salas() {
           onFilterSelection={(filtradas) => setFilteredSalas(filtradas)}
         />
         <div className="w-full flex flex-wrap justify-center gap-4">
-          {filteredSalas &&
-            filteredSalas.map((sala: ISala) => (
-              <SalaCard
-                key={sala.numero}
-                title={"Sala " + sala.numero}
-                floor={sala.andar + "º"}
-                capacity={sala.capacidade}
-                hourValue={sala.valorHora}
-                resources={sala.salasRecursos.map((recurso) => {
-                  return {
-                    nome: recurso.recurso.nome,
-                  };
-                })}
-                backgroundImage={
-                  sala.salasImagens.length > 0
-                    ? sala.salasImagens[0].imagemBase64
-                    : require("@/assets/conference-room.png")
-                }
-                backgroundAlt={`Foto da sala ${sala.nome}`}
-                onClick={() => {
-                  if (userData === null) {
-                    localStorage.setItem("redirectAfterLogin", `/salas?id=${sala.id}`);
-                    showToast(
-                      "Faça login para poder reservar uma sala",
-                      "error"
-                    );
-                    router.push("/login");
-                    return;
+          {loadingSalas
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <SalaCardSkeleton key={index} />
+              ))
+            : filteredSalas.map((sala: ISala) => (
+                <SalaCard
+                  key={sala.numero}
+                  title={"Sala " + sala.numero}
+                  floor={sala.andar + "º"}
+                  capacity={sala.capacidade}
+                  hourValue={sala.valorHora}
+                  resources={sala.salasRecursos.map((recurso) => {
+                    return {
+                      nome: recurso.recurso.nome,
+                    };
+                  })}
+                  backgroundImage={
+                    sala.salasImagens.length > 0
+                      ? sala.salasImagens[0].imagemBase64
+                      : require("@/assets/conference-room.png")
                   }
-                  setModalIsOpen(true);
-                  setModalItem(sala);
-                }}
-              />
-            ))}
+                  backgroundAlt={`Foto da sala ${sala.nome}`}
+                  onClick={() => {
+                    if (userData === null) {
+                      localStorage.setItem(
+                        "redirectAfterLogin",
+                        `/salas?id=${sala.id}`
+                      );
+                      showToast(
+                        "Faça login para poder reservar uma sala",
+                        "error"
+                      );
+                      router.push("/login");
+                      return;
+                    }
+                    setModalIsOpen(true);
+                    setModalItem(sala);
+                  }}
+                />
+              ))}
         </div>
       </div>
       {modalItem && modalIsOpen && (
