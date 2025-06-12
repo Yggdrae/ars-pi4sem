@@ -167,7 +167,7 @@ export default function RoomCreateModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Criar nova Sala"
+      title="Criar Nova Sala"
       className="xl:max-w-2xl 2xl:max-w-5xl xl:min-h-[70vh] 2xl:min-h-[50vh]"
     >
       <VStack className="gap-6 p-4">

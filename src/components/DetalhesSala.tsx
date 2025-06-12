@@ -24,6 +24,10 @@ import { HorizontalScroll } from "./HorizontalScroll";
 import { CheckboxCell } from "./Checkbox";
 import { detectarBandeiraCompleta } from "@/utils/detectarBandeira";
 import { getPaymentIcon } from "@/utils/getPaymentIcon";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { ptBR } from "date-fns/locale/pt-BR";
+import "react-datepicker/dist/react-datepicker.css";
+
 import {
   validarCvvCartao,
   validarNomeCartao,
@@ -41,6 +45,7 @@ export default function RoomDetailsModal({
   isOpen,
   onClose,
 }: RoomDetailsModalProps) {
+  registerLocale("pt-BR", ptBR);
   const { userData } = useAuth();
   const { showToast } = useToast();
   const { createReserva } = useReserva();
@@ -57,7 +62,7 @@ export default function RoomDetailsModal({
     const yyyy = tomorrow.getFullYear();
     const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
     const dd = String(tomorrow.getDate()).padStart(2, "0");
-
+    console.log(`${yyyy}-${mm}-${dd}`);
     return `${yyyy}-${mm}-${dd}`;
   });
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -65,7 +70,6 @@ export default function RoomDetailsModal({
     null
   );
   const [qrCode, setQrCode] = useState<string | null>(null);
-  const [loadingPixMethod, setLoadingPixMethod] = useState(false);
   const [inserirNovoCartao, setInserirNovoCartao] = useState(false);
   const [tempoRestante, setTempoRestante] = useState(300);
   const [loading, setLoading] = useState(false);
@@ -80,6 +84,8 @@ export default function RoomDetailsModal({
   });
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const [salvarCartao, setSalvarCartao] = useState(false);
+  const minDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+  const maxDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   const formatarTempo = (segundos: number) => {
     const min = Math.floor(segundos / 60)
@@ -106,7 +112,7 @@ export default function RoomDetailsModal({
 
     const [year, month, day] = selectedDate.split("-").map(Number);
     const localDate = new Date(year, month - 1, day);
-    const diaDaSemana = localDate.getDay() + 1;
+    const diaDaSemana = localDate.getDay();
     const disponibilidadesDoDia = room.disponibilidades?.filter(
       (d) => d.diaDaSemana === diaDaSemana
     );
@@ -115,8 +121,12 @@ export default function RoomDetailsModal({
     setHorariosDisponiveis([]);
 
     getCartoes(userData!.id).then(setCartoesSalvos);
+    const nextDate = new Date(selectedDate);
+    nextDate.setDate(nextDate.getDate() - 1);
 
-    getHorariosBySala(room.id, selectedDate).then(
+    const nextDateString = nextDate.toISOString().split("T")[0];
+
+    getHorariosBySala(room.id, nextDateString).then(
       (intervalosDisponiveis: IHorario[]) => {
         const horariosCompletos: { horario: string; ativo: boolean }[] = [];
 
@@ -133,10 +143,12 @@ export default function RoomDetailsModal({
                 return hh * 60 + mm;
               };
 
+              console.log(selectedDate);
               const estaDisponivel = intervalosDisponiveis.some((intervalo) => {
                 const hMin = horarioToMinutos(horaStr);
                 const inicioMin = horarioToMinutos(intervalo.horarioInicio);
                 const fimMin = horarioToMinutos(intervalo.horarioFim);
+                console.log(hMin, inicioMin, fimMin);
                 return hMin >= inicioMin && hMin + 60 <= fimMin;
               });
 
@@ -216,8 +228,6 @@ export default function RoomDetailsModal({
   };
 
   const handlePixCheckout = () => {
-    setLoadingPixMethod(true);
-
     setTimeout(() => {
       setQrCode(
         `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${JSON.stringify(
@@ -230,7 +240,6 @@ export default function RoomDetailsModal({
       );
       setTempoRestante(300);
     }, 1500);
-    setLoadingPixMethod(false);
   };
 
   const handleClose = () => {
@@ -506,31 +515,30 @@ export default function RoomDetailsModal({
                       ))}
                     </HorizontalScroll>
 
-                    <label
-                      htmlFor="data"
-                      className="block text-content-primary mb-1 font-medium"
-                    >
-                      Escolha uma data:
-                    </label>
-                    <input
-                      type="date"
-                      id="data"
-                      value={selectedDate}
-                      min={
-                        new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
-                          .toISOString()
-                          .split("T")[0]
-                      }
-                      max={
-                        new Date(
-                          new Date().getTime() + 30 * 24 * 60 * 60 * 1000
-                        )
-                          .toISOString()
-                          .split("T")[0]
-                      }
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="bg-[#1E1E1E] border border-[#444] rounded-lg text-white p-2 w-full mb-4"
-                    />
+                    <div className="mb-4 w-full">
+                      <label className="block text-content-primary mb-1 font-medium">
+                        Escolha uma data:
+                      </label>
+                      <DatePicker
+                        selected={selectedDate ? new Date(selectedDate) : null}
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            const formatted = date.toISOString().split("T")[0];
+                            setSelectedDate(formatted);
+                          }
+                        }}
+                        locale="pt-BR"
+                        minDate={minDate}
+                        maxDate={maxDate}
+                        dateFormat="dd/MM/yyyy"
+                        placeholderText="Clique para selecionar"
+                        className="bg-[#1E1E1E] border border-[#444] rounded-lg text-white p-2 w-full cursor-pointer"
+                        calendarClassName="!bg-white !text-black rounded-xl justify-self-end"
+                        wrapperClassName="w-full"
+                        dayClassName={() => "text-content-ternary"}
+                        showPopperArrow={false}
+                      />
+                    </div>
                     {horariosDisponiveis.length > 0 && (
                       <Text className="text-gray-300 mb-4 animate-pulse">
                         Selecione um ou mais horários disponíveis para a data
