@@ -10,6 +10,7 @@ import { useToast } from "@/context/ToastContext";
 import { useAuth } from "@/context/authContext";
 import { ISala } from "@/interfaces/ISala";
 import { SalaCardSkeleton } from "@/components/SalaCardSkeleton";
+import { FilterSkeleton } from "@/components/FilterSkeleton";
 
 export function SalasClient() {
   const router = useRouter();
@@ -49,10 +50,14 @@ export function SalasClient() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 w-full">
-      <FilterSection
-        rooms={salas}
-        onFilterSelection={(filtradas) => setFilteredSalas(filtradas)}
-      />
+      {loadingSalas ? (
+        <FilterSkeleton />
+      ) : (
+        <FilterSection
+          rooms={salas}
+          onFilterSelection={(filtradas) => setFilteredSalas(filtradas)}
+        />
+      )}
       <div className="w-full flex flex-wrap justify-center gap-4">
         {loadingSalas
           ? Array.from({ length: 6 }).map((_, index) => (

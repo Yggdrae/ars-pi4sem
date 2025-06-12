@@ -48,7 +48,7 @@ export function RoomTabImagens({
     if (!files.length) return;
 
     const validFiles: File[] = files.filter(
-      (file) => file.size <= 2 * 1024 * 1024
+      (file) => file.size <= 5 * 1024 * 1024
     );
     const tooBigFiles = files.filter((file) => file.size > 2 * 1024 * 1024);
 

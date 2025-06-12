@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSalas } from "@/hooks/useSalas";
 import { ISala } from "@/interfaces/ISala";
+import { DestaqueCardSkeleton } from "@/components/DestaqueCardSkeleton";
 
 export default function Home() {
   const { getDestaques } = useSalas();
@@ -72,9 +73,14 @@ export default function Home() {
       )}
 
       <HStack className="w-full justify-center flex-wrap gap-8">
-        {destaques.length > 0 &&
-          destaques.map((destaque: ISala) => {
-            return (
+        {destaques.length === 0
+          ? [...Array(3)].map((_, i) => (
+              <DestaqueCardSkeleton
+                key={i}
+                className="w-full sm:w-[48%] lg:w-[30%]"
+              />
+            ))
+          : destaques.map((destaque: ISala) => (
               <DestaqueCard
                 key={destaque.numero}
                 salaId={destaque.id}
@@ -90,8 +96,7 @@ export default function Home() {
                 capacity={destaque.capacidade}
                 hourValue={destaque.valorHora}
               />
-            );
-          })}
+            ))}
       </HStack>
     </Layout>
   );

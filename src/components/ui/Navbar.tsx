@@ -73,7 +73,7 @@ export function Navbar({ children, ...props }: NavbarProps) {
         <div className="relative">
           <FaUser
             className="text-content-primary cursor-pointer"
-            size={30}
+            size={24}
             onClick={() => setShowUserMenu((prev) => !prev)}
           />
 
